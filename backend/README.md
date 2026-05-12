@@ -1,7 +1,7 @@
-*Back-end do Wedding pass!
+* Back-end do Wedding pass!
 
 
-**Para iniciar o projeto, siga as instruções abaixo:
+** Para iniciar o projeto, siga as instruções abaixo:
 - 1º Para baixar as dependenicas, entre na pasta e rode: npm i
 - 2º Configure o .env: Crie o arquivo .env na pasta "src", e coloque as seguintes informações: DB_HOST=localhost
 DB_PORT=3306
@@ -17,7 +17,7 @@ PORT=3000
 - 3º Após instalar as dependencias e configurar o .env, para iniciar o projeto rode: npm run dev
 
 
-**Mesmo com o typeORM criando as tabelas, segue o script do banco de dados (mysql), com as tabelas e inserts dos usuários/convidados.:
+** Mesmo com o typeORM criando as tabelas, segue o script do banco de dados (mysql), com as tabelas e inserts dos usuários/convidados.:
 CREATE SCHEMA IF NOT EXISTS prova;
 USE prova;
 
@@ -53,4 +53,4 @@ INSERT INTO users (name, email, cpf, password, role) VALUES ("admin", "admin@gma
 
 INSERT INTO users (name, email, cpf, password, role) VALUES ("recepcionista", "recepcionista@gmail.com", "12345678911", "$10$Ettd1ukEqORFFUDb7lEj5.VtjHnUuQMI/IeB5/tsZsJfO0tfZ.Tki", "recepcionista")
 
-***Para rodar, cole esse script dentro do mysql workbench, e clique no primeiro icone de raio que fica no header do arquivo.
+*** Para rodar, cole esse script dentro do mysql workbench, e clique no primeiro icone de raio que fica no header do arquivo.
