@@ -78,6 +78,7 @@ ex: {
 ## Listagem de convidados - Admin e Recepcionista permitidos
 - Método: GET http://localhost:3000/guest/list (isso para listar todos os convidados.)
 - Método: GET http://localhost:3000/guest/list?name=convidado 1 (isso vai listar o convidado pelo nome buscado nos parametros da URL, nesse exemplo, retornaria o convidado 1)
+- Neste método nao é necessario body.
 
 ## Edição de convidados - Somente admin permitido
 - Método: PUT http://localhost:3000/guest/update/:id
@@ -98,3 +99,4 @@ ex: {
 ## Dashboard - Somente admin permitido
 - Método: GET http://localhost:3000/dashboard
 - Esse método irá listar a quantidade total de convidados, os confirmados, pendentes, e a ocupação em %
+- Neste método nao é necessario body.
