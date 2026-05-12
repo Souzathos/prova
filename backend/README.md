@@ -56,7 +56,7 @@ INSERT INTO users (name, email, cpf, password, role) VALUES ("recepcionista", "r
 ### Para rodar, cole esse script dentro do mysql workbench, e clique no primeiro icone de raio que fica no header do arquivo.
 
 ## Rotas
-*LEMBRE-SE de adicionar o token da respectiva role necessária para realizar a rota (mencionado abaixo quais roles são permitidas para suas respectivas rotas), adicione o token na sua rota em Auth -> Bearer -> (seu token) OU Headers -> (adicionar novo campo) header -> Authorization value -> (seu token) . O token é entregue no body ao fazer login como user. admin e recepcionista tem tokens diferente a cada vez que fazem login.*
+*LEMBRE-SE de adicionar o token da respectiva role necessária para realizar a rota (mencionado abaixo quais roles são permitidas para suas respectivas rotas), adicione o token na sua rota em Auth -> Bearer -> (seu token) OU Headers -> (adicionar novo campo) header -> Authorization | value -> (seu token) . O token é entregue no body ao fazer login como user. admin e recepcionista tem tokens diferente a cada vez que fazem login.*
 ### Login de usuário
 - método: POST http://localhost:3000/user/login
 - No body, coloque email e senha. 
