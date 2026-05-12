@@ -17,7 +17,7 @@ PORT=3000
 - 3º Após instalar as dependencias e configurar o .env, para iniciar o projeto rode: npm run dev
 
 
-**Mesmo com o typeORM criando as tabelas, segue o script do banco de dados (mysql):
+**Mesmo com o typeORM criando as tabelas, segue o script do banco de dados (mysql), com as tabelas e inserts dos usuários/convidados.:
 CREATE SCHEMA IF NOT EXISTS prova;
 USE prova;
 
@@ -52,3 +52,5 @@ INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('convi
 INSERT INTO users (name, email, cpf, password, role) VALUES ("admin", "admin@gmail.com", "12345678910", "$2b$10$IJLtkIJBWXVMIkGVDuNQn.e/dv9W9QlWpYSH3g59PqQM3MnNx6YM6", "admin")
 
 INSERT INTO users (name, email, cpf, password, role) VALUES ("recepcionista", "recepcionista@gmail.com", "12345678911", "$10$Ettd1ukEqORFFUDb7lEj5.VtjHnUuQMI/IeB5/tsZsJfO0tfZ.Tki", "recepcionista")
+
+***Para rodar, cole esse script dentro do mysql workbench, selecione tudo e segure CRTL + Enter
