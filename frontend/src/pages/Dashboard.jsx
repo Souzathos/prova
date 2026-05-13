@@ -1,6 +1,6 @@
-import { BarChart } from 'lucide-react'
+
 import React, { useEffect, useState } from 'react'
-import { Bar, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, Tooltip, XAxis, YAxis } from 'recharts'
 import Header from '../components/Header'
 
 function Dashboard() {
