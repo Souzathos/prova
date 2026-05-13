@@ -56,20 +56,20 @@ function Reception() {
             <Header page={"Recepção"}/>
             <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl border border-gray-700 p-4 mt-4 shadow-lg' value={guests.name} onChange={(e) => setSearch(e.target.value)} />
             <div className='flex flex-col justify-between text-center '>
-                <div className='bg-white w-full rounded shadow mt-4 '>
+                <div className='bg-white hover:bg-gray-50 transition w-full rounded shadow mt-4 '>
                     <p className='font-semibold'>Total</p>
                     <p className='text-lg 
-                font-semibold'>{total}</p>
+                font-bold'>{total}</p>
                 </div>
 
-                <div className='bg-green-500 w-full rounded shadow mt-2'>
-                    <p className='text-lg text-green-800 font-semibold'>Confirmados</p>
+                <div className='bg-green-500 hover:bg-green-600 transition w-full rounded shadow mt-2'>
+                    <p className='text-lg text-white font-semibold'>Confirmados</p>
                     <p className='text-green-800 font-bold'>{confirmed}</p>
                 </div>
 
-                <div className='bg-rose-400 w-full rounded shadow mt-2'>
-                    <p className='text-lg text-rose-800 font-semibold'>Pendentes</p>
-                    <p className='text-lg text-rose-800 font-semibold'>{pending}</p>
+                <div className='bg-rose-400 hover:bg-rose-500 transition w-full rounded shadow mt-2'>
+                    <p className='text-lg text-white font-semibold'>Pendentes</p>
+                    <p className='text-lg text-rose-800 font-bold'>{pending}</p>
                 </div>
             </div>
 
@@ -79,7 +79,7 @@ function Reception() {
                 <GuestCard key={g.id} guest={g}
                 ><button disabled={g.checked_in}
                     onClick={() => checkin(g.id)}
-                    className={`${g.checked_in ? "bg-green-500" : "bg-yellow-500"} p-2 rounded-2xl mt-2 cursor-pointer`}><p className='font-semibold text-white'>{g.checked_in ? "Checkin Realizado" : "Realizar Checkin"}</p>
+                    className={`${g.checked_in ? "bg-green-500" : "bg-yellow-500 hover:bg-yellow-700 transition"} p-2 rounded-2xl mt-2 cursor-pointer`}><p className='font-semibold text-white'>{g.checked_in ? "Checkin Realizado" : "Realizar Checkin"}</p>
                     </button>
                     </GuestCard>
             ))}

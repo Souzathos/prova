@@ -120,23 +120,23 @@ function Admin() {
         </div>
 
         <div className='flex flex-col gap-2 mt-4'>
-            <button onClick={() => save(editingId)} className={`w-full cursor-pointer rounded-2xl shadow p-3 font-semibold text-white ${editingId ? "bg-yellow-500" : "bg-[#7dd607]"} cursor-pointer`}>
+            <button onClick={() => save(editingId)} className={` w-full cursor-pointer rounded-2xl shadow p-3 font-semibold text-white ${editingId ? "bg-yellow-500 hover:bg-yellow-700 transition" : "bg-[#7dd607]   hover:bg-[#65af04] transition"} cursor-pointer`}>
                 {editingId ? "Editar Convidado" : "Registrar convidado"}
             </button>
 
             {editingId && (
-                <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 py-3 cursor-pointer text-white font-semibold'>Cancelar</button>
+                <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 hover:bg-rose-700 py-3 cursor-pointer text-white font-semibold'>Cancelar</button>
             )}
 
             <div className=''>
                 {guests.map(g =>  (
                 <GuestCard key={g.id} guest={g}>
                     <button onClick={() => edit(g)}
-                    className='bg-yellow-500 rounded-2xl cursor-pointer shadow px-3 py-1 mb-2 mt-2 font-bold text-white'>
+                    className='bg-yellow-500 hover:bg-yellow-700 rounded-2xl cursor-pointer shadow px-3 py-1 mb-2 mt-2 font-bold text-white'>
                         Editar
                     </button>
 
-                    <button className='bg-rose-700 cursor-pointer rounded-2xl shadow px-3 py-1 text-white font-bold' onClick={() => remove(g.id)}>Excluir</button>
+                    <button className='bg-rose-700 hover:bg-rose-500 cursor-pointer rounded-2xl shadow px-3 py-1 text-white font-bold' onClick={() => remove(g.id)}>Excluir</button>
                 </GuestCard>
             ))}
             </div>
