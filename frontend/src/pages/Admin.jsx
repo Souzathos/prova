@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import GuestCard from '../components/GuestCard'
+import Header from '../components/Header'
 
 function Admin() { 
     const [guests, setGuests] = useState([])
     const [editingId, setEditingId] = useState(null)
-
+    const [error, setError] = useState(null)
     const [form, setForm] = useState({
         name: "",
         email: "",
-        cpf: "",
         phone: "",
         table_number: ""
     })
@@ -31,8 +31,8 @@ function Admin() {
     async function save(id) {
         try {
 
-            if(!form.name || !form.cpf) {
-                throw new Error('Nome e CPF são obrigatorios')
+            if(!form.name || !form.email) {
+                throw new Error('Nome e Email são obrigatorios')
             }
 
             if(editingId) {
@@ -61,6 +61,7 @@ function Admin() {
             resetForm()
             load()
         } catch(err) {
+            setError(err)
             throw new Error('Erro ao salvar convidado', err)
         }
     }
@@ -71,7 +72,6 @@ function Admin() {
         setForm({
             name: g.name || "",
             email: g.email || "",
-            cpf: g.cpf || "",
             phone: g.phone || "",
             table_number: g.table_number || ""
         })
@@ -80,7 +80,6 @@ function Admin() {
         setEditingId(null)
         setForm({
             name: "",
-            cpf: "",
             email: "",
             phone: "",
             table_number: ""
@@ -102,7 +101,10 @@ function Admin() {
   return (
     <div className='min-h-screen bg-rose-100 p-4'>
 
+        <Header page="Painel administrativo"/>
         <div  className='space-y-4 mt-6'>
+
+            {error && (<p className='text-sm text-rose-500 text-center'>{error.message}</p>)}
             <input type="text" placeholder='Nome' value={form.name} onChange={(e) => setForm({...form, name: e.target.value})}
             className='w-full border border-gray-500 bg-white/80 cursor-pointer p-4 rounded-2xl shadow mb-4'/>
 
@@ -118,23 +120,23 @@ function Admin() {
         </div>
 
         <div className='flex flex-col gap-2 mt-4'>
-            <button onClick={() => save(editingId)} className={`w-full rounded-2xl shadow p-3 ${editingId ? "bg-yellow-500" : "bg-rose-400"} cursor-pointer`}>
+            <button onClick={() => save(editingId)} className={`w-full cursor-pointer rounded-2xl shadow p-3 font-semibold text-white ${editingId ? "bg-yellow-500" : "bg-[#7dd607]"} cursor-pointer`}>
                 {editingId ? "Editar Convidado" : "Registrar convidado"}
             </button>
 
             {editingId && (
-                <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 py-3'>Cancelar</button>
+                <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 py-3 cursor-pointer'>Cancelar</button>
             )}
 
             <div className=''>
                 {guests.map(g =>  (
                 <GuestCard key={g.id} guest={g}>
                     <button onClick={() => edit(g)}
-                    className='bg-yellow-500 rounded shadow px-3 py-1 mb-2 font-bold text-white'>
+                    className='bg-yellow-500 rounded-2xl cursor-pointer shadow px-3 py-1 mb-2 mt-2 font-bold text-white'>
                         Editar
                     </button>
 
-                    <button className='bg-rose-700 rounded shadow px-3 py-1 text-white font-bold' onClick={() => remove(g.id)}>Excluir</button>
+                    <button className='bg-rose-700 cursor-pointer rounded-2xl shadow px-3 py-1 text-white font-bold' onClick={() => remove(g.id)}>Excluir</button>
                 </GuestCard>
             ))}
             </div>

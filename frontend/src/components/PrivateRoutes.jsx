@@ -6,6 +6,7 @@ function PrivateRoutes({children, allowedRoles}) {
   const role = localStorage.getItem('role')
 
   if(!token) {
+    alert(token)
     return <Navigate to="/" />
   }
 

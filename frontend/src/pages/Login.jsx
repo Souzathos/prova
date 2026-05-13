@@ -14,6 +14,9 @@ function Login() {
             })
             const data = await response.json()
 
+            localStorage.setItem('token', data.token)
+            localStorage.setItem('role', data.user.role)
+
             if(data.user.role === "admin") {
                 window.location.href = "/dashboard"
             } else {
@@ -27,8 +30,8 @@ function Login() {
 
 
   return (
-    <div className='min-h-screen bg-rose-100 p-4'>
-        <div className='flex flex-col items-center justify-center'>
+    <div className='min-h-screen bg-amber-100 p-4'>
+        <div className='flex flex-col items-center justify-center mt-30'>
            <div className='text-center w-80 shadow bg-white/80 rounded-2xl p-4 space-y-2'>
              <h1>
                 Wedding Pass 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import GuestCard from '../components/GuestCard'
+import Header from '../components/Header'
 
 function Reception() {
     const [guests, setGuests] = useState([])
@@ -52,10 +53,10 @@ function Reception() {
 
     return (
         <div className='bg-rose-100 min-h-screen p-4'>
-
-            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl border border-gray-700 p-4' onChange={(e) => setSearch(e.target.value)} />
+            <Header page={"Recepção"}/>
+            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl border border-gray-700 p-4 mt-4 shadow-lg' value={guests.name} onChange={(e) => setSearch(e.target.value)} />
             <div className='flex flex-col justify-between text-center '>
-                <div className='bg-white w-full rounded shadow mt-4'>
+                <div className='bg-white w-full rounded shadow mt-4 '>
                     <p className='font-semibold'>Total</p>
                     <p className='text-lg 
                 font-semibold'>{total}</p>
@@ -74,7 +75,7 @@ function Reception() {
 
             {loading && (<p>Carregando dashboard...</p>)}
 
-            {guests.map((g) => (
+            {filtered.map((g) => (
                 <GuestCard key={g.id} guest={g}
                 ><button disabled={g.checked_in}
                     onClick={() => checkin(g.id)}
