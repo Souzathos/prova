@@ -1,16 +1,26 @@
-# React + Vite
+#Pré requisitos
+## node v18+
+## banco mysql rodando no pc
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Instalação do front
+*Para conseguir rodar o projeto, siga os seguintes passos:*
+- Entrar na pasta do frontend. No terminal: cd frontend
+- Instalar as dependências. No terminal (ainda dentro da pasta): npm install
+- Rodar o projeto. No terminal (na mesma pasta): npm run dev
+- Após isso, acesse localhost:5173 no navegador.
 
-Currently, two official plugins are available:
+## O senac wedding trata-se de um sistema de checkin de convidados para um casamento. Tendo funções separadas de usuário (administrador e recepcionista), que contém diversas funções para cada
+- Admin: Pode cadastrar, visualizar/buscar convidados por nome (em tempo real), fazer checkin, deletar e editar convidados.
+- Recepcionista: Pode apenas visualizar/buscar convidados por nome (em tempo real) e realizar checkin.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Telas permitidas para o administrador
+- Dashboard (Ver dados reais com base no banco de dados, como total de convidados, total de convidados confirmados (com checkin realizado) e os convidados pendentes(os que nao fizeram checkin). Todos esses dados vem do backend via integração com fetch).
+- Admin (criar, atualizar, ou deletar convidados, tendo tambem o numero total, de confirmados e os pendentes).
+- Recepção (Visualizar e buscar convidados por nome, ou realizar o checkin).
 
-## React Compiler
+## Telas permitidas para o recepcionista
+- Recepção (Visualizar e buscar convidados por nome, ou realizar o checkin).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Tecnologias utilizadas
+### frontend: Reaxt.js, tailwindCSS
+### backend: Typescript, node.js, typeORM

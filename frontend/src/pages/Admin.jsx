@@ -102,7 +102,7 @@ function Admin() {
     <div className='min-h-screen bg-rose-100 p-4'>
 
         <Header page="Painel administrativo"/>
-        <div  className='space-y-4 mt-6'>
+        <div  className='gap-2 mt-6'>
 
             {error && (<p className='text-sm text-rose-500 text-center'>{error.message}</p>)}
             <input type="text" placeholder='Nome' value={form.name} onChange={(e) => setForm({...form, name: e.target.value})}
@@ -125,7 +125,7 @@ function Admin() {
             </button>
 
             {editingId && (
-                <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 py-3 cursor-pointer'>Cancelar</button>
+                <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 py-3 cursor-pointer text-white font-semibold'>Cancelar</button>
             )}
 
             <div className=''>
