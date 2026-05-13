@@ -41,11 +41,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 
-INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('convidado 1', 'convidado1@gmail.com', '51299999999', 1, false);
-INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('convidado 2', 'convidado2@gmail.com', '51399999999', 2, false);
-INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('convidado 3', 'convidado3@gmail.com', '51499999999', 3, false);
-INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('convidado 4', 'convidado4@gmail.com', '51599999999', 3, false);
-INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('convidado 5', 'convidado5@gmail.com', '51699999999', 5, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Arthur Silva', 'arthursilva@gmail.com', '51984443326', 5, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Davi Zarpellon', 'davizarp@gmail.com', '51981754427', 10, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Tiago Souza', 'tiago51@gmail.com', '51981723642', 3, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Henzo Silva', 'henzob@gmail.com', '51976283019', 10, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Bia Nascimento', 'bianascimento@gmail.com', '51995421678', 5, false);
 
 
 
