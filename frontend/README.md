@@ -9,7 +9,7 @@
 - Rodar o projeto. No terminal (na mesma pasta): npm run dev
 - Após isso, acesse localhost:5173 no navegador.
 
-## O senac wedding trata-se de um sistema de checkin de convidados para um casamento. Tendo funções separadas de usuário (administrador e recepcionista), que contém diversas funções para cada
+## O senac wedding trata-se de um sistema de checkin de convidados para um casamento. Contendo cargos diferentes de usuário (administrador e recepcionista), que contém diversas funções para cada
 - Admin: Pode cadastrar, visualizar/buscar convidados por nome (em tempo real), fazer checkin, deletar e editar convidados.
 - Recepcionista: Pode apenas visualizar/buscar convidados por nome (em tempo real) e realizar checkin.
 
