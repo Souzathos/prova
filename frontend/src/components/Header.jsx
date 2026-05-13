@@ -20,16 +20,16 @@ function Header({ page }) {
 
                 <div className='flex gap-10 items-center '>
                     {role === "admin" && (
-                        <Link className='text-gray-500 font-semibold' to="/dashboard">Dashboard</Link>
+                        <Link className='text-gray-500 hover:text-gray-800 transition font-semibold' to="/dashboard">Dashboard</Link>
                     )}
 
-                    <Link className='text-gray-500 font-semibold' to='/reception'>Recepção</Link>
+                    <Link className='text-gray-500 hover:text-gray-800 transition font-semibold' to='/reception'>Recepção</Link>
 
                     {role === "admin" && (
-                        <Link className='text-gray-500 font-semibold' to="/admin">Admin</Link>
+                        <Link className='text-gray-500 hover:text-gray-800 transition font-semibold' to="/admin">Admin</Link>
                     )}
 
-                    <LogOut onClick={logout} className='text-rose-500 text-sm cursor-pointer' />
+                    <LogOut onClick={logout} className='text-rose-500 hover:text-rose-700 transition cursor-pointer' />
                 </div>
 
 
