@@ -62,14 +62,14 @@ function Reception() {
                 font-bold'>{total}</p>
                 </div>
 
-                <div className='bg-green-500 hover:bg-green-600 transition w-full rounded shadow mt-2'>
-                    <p className='text-lg text-white font-semibold'>Confirmados</p>
+                <div className='bg-green-300 hover:bg-green-400 transition w-full rounded shadow mt-2'>
+                    <p className='text-lg text-green-700 font-semibold'>Confirmados</p>
                     <p className='text-green-800 font-bold'>{confirmed}</p>
                 </div>
 
-                <div className='bg-rose-400 hover:bg-rose-500 transition w-full rounded shadow mt-2'>
-                    <p className='text-lg text-white font-semibold'>Pendentes</p>
-                    <p className='text-lg text-rose-800 font-bold'>{pending}</p>
+                <div className='bg-yellow-300 hover:bg-yellow-400 transition w-full rounded shadow mt-2'>
+                    <p className='text-lg text-yellow-700 font-semibold'>Pendentes</p>
+                    <p className='text-lg text-yellow-700 font-bold'>{pending}</p>
                 </div>
             </div>
 
