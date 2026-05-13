@@ -1,4 +1,4 @@
-#Pré requisitos
+# Pré requisitos
 ## node v18+
 ## banco mysql rodando no pc
 
