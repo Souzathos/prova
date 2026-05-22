@@ -10,34 +10,28 @@ function Header({ page }) {
         window.location.href = "/"
     }
     return (
-        <div className='w-full bg-[#ffe8e9] p-4 border border-rose-200 rounded-2xl shadow-xl'>
-            <div className='flex justify-between sm:flex flex-wrap items-center'>
-                <div className='flex items-center gap-2'>
-                    <h1 className='text-sm font-serif font-semibold text-gray-700 sm:text-xl'>Wedding Pass <span>|</span></h1>
-                  
-                    <p className='text-sm text-gray-700'>{page}</p>
+        <div className='w-full bg-[#FBF7F2] p-4 rounded-2xl shadow-xl'>
+            <div className='flex items-center justify-between sm:flex flex-wrap'>
+                <div className='flex flex-col '>
+                    <p className='text-sx text-[#C9A86A] font-mono'>Wedding Pass</p>
+                    <h1 className='text-3xl font-serif font-light'>Recepção</h1>
                 </div>
-
-                <div className='flex gap-10 items-center '>
+                <div className='flex space-x-6 items-center'>
                     {role === "admin" && (
-                        <Link className='text-gray-500 hover:text-gray-800 transition font-semibold' to="/dashboard">Dashboard</Link>
+                        <Link to="/dashboard">Dashboard</Link>
                     )}
-
-                    <Link className='text-gray-500 hover:text-gray-800 transition font-semibold' to='/reception'>Recepção</Link>
+                    <Link to="/reception" >Recepção</Link>
 
                     {role === "admin" && (
-                        <Link className='text-gray-500 hover:text-gray-800 transition font-semibold' to="/admin">Admin</Link>
+                        <Link to="/admin">Admin</Link>
                     )}
 
-                    <LogOut onClick={logout} className='text-rose-500 hover:text-rose-700 transition cursor-pointer' />
+
+                    <button className='flex items-center justify-center text-xs bg-[#3D2E26] rounded-full text-white px-4 py-2 gap-2 cursor-pointer' onClick={() => logout()}>   <LogOut size={18} />
+                        Sair
+                    </button>
                 </div>
-
-
             </div>
-
-            
-
-
         </div>
     )
 }

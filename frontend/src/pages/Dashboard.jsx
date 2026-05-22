@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import Header from '../components/Header'
+import MiniCard from '../components/MiniCard'
 
 function Dashboard() {
   const [guests, setGuests] = useState([])
@@ -53,9 +54,9 @@ function Dashboard() {
       <Header page="Dashboard" />
 
         <div className='grid grid-cols-3 p-4 text-center space-x-2'>
-          <Card title="Total" value={total} />
-          <Card title="Confirmados" value={confirmed} variant='green' />
-          <Card title="Pendentes" value={pending} variant='yellow' />
+          <MiniCard title="Total" value={total} />
+          <MiniCard title="Confirmados" value={confirmed} variant='green' />
+          <MiniCard title="Pendentes" value={pending} variant='yellow' />
         </div>
 
         <div>

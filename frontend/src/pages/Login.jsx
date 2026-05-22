@@ -30,47 +30,164 @@ function Login() {
 
 
     return (
-        <div className='min-h-screen bg-amber-100'>
-            <div className='flex h-full w-full'>
-                <img src="../assets/images/img-login.jpg" alt="" />
-                <div className='min-h-scren w-1/2'>
-                    
-                </div>
-                <div className='min-h-screen w-1/2 bg-[#F5EDE2] flex flex-col p-6 items-start '>
-                    <div className='flex flex-col mt-40 items-start gap-1 ml-15'>
-                        <p className='text-2xl text-[#C9A86A]'>- Acesso restritivo - </p>
-                        <h1 className='text-7xl font-serif'>Wedding Pass</h1>
-                        <p className='text-lg text-[#C9A86A] '>Continue de onde voce parou</p>
-                    </div>
+        <div className="min-h-screen bg-[#c9a48d] flex items-center justify-center p-6">
+      
+      {/* CARD PRINCIPAL */}
+      <div className="w-full max-w-6xl bg-[#f5ebe4] rounded-sm overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-2">
+        
+        {/* IMAGEM */}
+        <div className="relative hidden lg:block">
+          
+          <img
+            src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop"
+            alt="Wedding"
+            className="w-full h-full object-cover"
+          />
 
-                    <div className='flex flex-col mt-20 items-start gap-1 ml-15 w-220'>
-                        
-                    {error && (
-                        <p className='flex justify-center text-rose-500 text-md mt-7 font-semibold w-full'>Erro ao fazer login</p>
-                    )}
-                        <p className='text-[#C9A86A] text-xl font-serif mb-4'>E-mail</p>
-                        <input placeholder='example@email.com' className='border-b border-gray-600 p-4  rounded  w-full' onChange={(e) => setEmail(e.target.value)} />
+          {/* overlay */}
+          <div className="absolute inset-0 bg-[#c79d84]/30"></div>
 
-                        <p className='text-[#C9A86A] text-xl font-serif mb-4 mt-8'>Senha</p>
-                        <input type='password' placeholder='********' className='border-b border-gray-600 p-4  rounded shadow w-full' onChange={(e) => setPassword(e.target.value)} />
+          {/* detalhes decorativos */}
+          <div className="absolute inset-0 border border-white/30 m-8 rounded-full"></div>
 
-                        <button onClick={handleLogin}
-                            className='bg-[#C9A86A] text-white p-6 w-full rounded-full text-2xl font-bold shadow mt-10 cursor-pointer'>Entrar no painel</button>
-                        <div className='flex items-center w-full gap-4 mt-8'>
-                            <hr className='flex-1 border-[#C9A86A]' />
+          <div className="absolute top-10 left-10 w-32 h-32 border border-white/40 rounded-full"></div>
 
-                            <p className='text-[#C9A86A] font-serif'>Ou</p>
-
-                            <hr className='flex-1 border-[#C9A86A]' />
-                        </div>
-
-                        <button onClick={handleLogin}
-                            className='bg-[#F5EDE2] text-[#C9A86A] p-6 w-full border rounded-full text-2xl font-bold shadow mt-10 cursor-pointer'>Criar novo usuário</button>
-                    </div>
-
-                </div>
-            </div>
+          <div className="absolute bottom-10 right-10 w-40 h-40 border border-white/40 rounded-full"></div>
         </div>
+
+        {/* LOGIN */}
+        <div className="flex items-center justify-center px-8 py-16 bg-[#f5ebe4]">
+          
+          <div className="w-full max-w-md">
+            
+            <p className="text-[#c9a48d] uppercase tracking-[4px] text-sm mb-3">
+              Acesso restrito
+            </p>
+
+            <h1 className="text-6xl font-serif text-[#5a463b] mb-2">
+              Wedding Pass
+            </h1>
+
+            <p className="text-[#9b7d6d] mb-10">
+              Celebre cada momento
+            </p>
+              
+              {/* EMAIL */}
+              <div>
+                <label className="block text-xs uppercase tracking-[3px] text-[#b1907d] mb-2">
+                  E-mail
+                </label>
+
+                <input
+                  type="email"
+                  placeholder="noiva@weddingpass.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="
+                    w-full
+                    border-b
+                    border-[#d8c4b8]
+                    bg-transparent
+                    py-3
+                    outline-none
+                    text-[#5a463b]
+                    placeholder:text-[#bca79a]
+                    focus:border-[#c8a15d]
+                    transition
+                  "
+                />
+              </div>
+
+              {/* SENHA */}
+              <div>
+                <label className="block text-xs uppercase tracking-[3px] text-[#b1907d] mb-2">
+                  Senha
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="
+                    w-full
+                    border-b
+                    border-[#d8c4b8]
+                
+                    bg-transparent
+                    py-3
+                    outline-none
+                    text-[#5a463b]
+                    placeholder:text-[#bca79a]
+                    focus:border-[#c8a15d]
+                    transition
+                  "
+                />
+              </div>
+
+              {/* ERRO */}
+              {error && (
+                <p className="text-red-500 text-sm">
+                  {error}
+                </p>
+              )}
+
+              {/* BOTÃO */}
+              <button
+                onClick={handleLogin}
+                className="
+                  cursor-pointer
+                  w-full
+                  bg-[#c8a15d]
+                  hover:bg-[#b88f4c]
+                  transition
+                  text-white
+                  py-4
+                  rounded-full
+                  tracking-[2px]
+                  uppercase
+                  font-semibold
+                  mt-6
+                "
+              >
+                Entrar no painel
+              </button>
+
+              {/* DIVISOR */}
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1 h-px bg-[#dbc9bf]"></div>
+
+                <span className="text-[#b89b8a] text-sm uppercase">
+                  ou
+                </span>
+
+                <div className="flex-1 h-px bg-[#dbc9bf]"></div>
+              </div>
+
+              {/* BOTÃO SECUNDÁRIO */}
+              <button
+                type="button"
+                onClick={() => (window.location.href = "/register")}
+                className="
+                  w-full
+                  border
+                  border-[#d7c2b5]
+                  text-[#8f7466]
+                  py-4
+                  rounded-full
+                  uppercase
+                  tracking-[2px]
+                  hover:bg-[#efe2d9]
+                  transition
+                "
+              >
+                Criar novo usuário
+              </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
     )
 }
 
