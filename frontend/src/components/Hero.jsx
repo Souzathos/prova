@@ -46,17 +46,30 @@ function Hero() {
                     <p className='text-lg text-white/80'>Gerencie check-ins, acompanhe confirmações e organize a recepção em tempo real</p>
                 </div>
                 <div className='flex gap-4 items-center p-4 mt-4'>
-                    <button onClick={handlePrint} className='text-white text-lg border border-[#C9A86A] rounded-full p-4'>Exportar Lista</button>
+                    <button onClick={handlePrint} className='text-white text-lg border border-[#C9A86A] rounded-full p-4 cursor-pointer'>Exportar Lista</button>
                 </div>
             </div>
 
-            <div className='flex absolute bottom-0 left-1/2 '>
-                <MiniCard title="TOTAL" value={total} />
-                <MiniCard title="CONFIRMADOS" value={confirmed} variant='green'/>
-                <MiniCard  title="PENDENTES" value={pending} variant='yellow'/>
+            <div className="absolute left-1/2 -bottom-40 md:-bottom-24 -translate-x-1/2 w-[95%] grid grid-cols-1 md:grid-cols-3 gap-4 px-2 sm:px-4" >
 
+                <MiniCard
+                    title="Total"
+                    value={total}
+                    
+                />
+
+                <MiniCard
+                    title="Confirmados"
+                    value={confirmed}
+                    border="#6F8F6F"
+                />
+
+                <MiniCard
+                    title="Pendentes"
+                    value={pending}
+                    border="#C9A86A"
+                />
             </div>
-
         </div>
     )
 }

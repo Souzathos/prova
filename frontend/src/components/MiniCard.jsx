@@ -1,22 +1,18 @@
 import React from 'react'
 
-function MiniCard({ title, value, variant = "default" }) {
-  const styles = {
-    default: "bg-white",
-    green: "bg-white/70 border-l-[#6F8F6F]",
-    yellow: "bg-yellow-100"
-  }
-
-  const textColor = {
-    default: "text-gray-800",
-    green: "text-green-700",
-    yellow: "text-yellow-700"
-  }
-
+function MiniCard({ title, value, border}) {
   return (
-    <div className={`${styles[variant]} rounded-xl shadow p-4`}>
-      <p className='text-gray-700 text-xs'>{title}</p>
-      <h2 className={`${textColor[variant]} text-xl font-bold`}>{value}</h2>
+    <div className='bg-[#f7f3ef] text-[#3d2a21] p-5 sm:p-6 rounded-sm shadow-lg border-l-4' style={{
+      borderColor: border,
+    }}>
+
+      <p className='uppercase tracking-[3px] text-xs text-[#8a7465] mb-3'>
+        {title}
+      </p>
+
+      <h2 className='text-4xl md:text-5xl font-serif wrap-break-word'>
+        {value}
+      </h2>
     </div>
   )
 }

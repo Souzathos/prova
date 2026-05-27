@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import GuestCard from '../components/GuestCard'
 import Header from '../components/Header'
+import Hero from '../components/Hero'
+import { useReactToPrint } from 'react-to-print'
 
 function Admin() { 
     const [guests, setGuests] = useState([])
@@ -99,10 +101,12 @@ function Admin() {
 
     useEffect(() => {load()}, [])
   return (
-    <div className='min-h-screen bg-rose-100 p-4'>
+    <div className='min-h-screen bg-[#F5EDE2] p-4'>
 
         <Header page="Painel administrativo"/>
-        <div  className='gap-2 mt-6'>
+        <Hero />
+        <div className='flex justify-between gap-10 mt-35'>
+        <div  className='gap-2 mt-5 bg-white rounded-2xl shadow  w-1/2'>
 
             {error && (<p className='text-sm text-rose-500 text-center'>{error.message}</p>)}
             <input type="text" placeholder='Nome' value={form.name} onChange={(e) => setForm({...form, name: e.target.value})}
@@ -117,10 +121,7 @@ function Admin() {
 
              <input type="text" placeholder='Número da mesa' value={form.table_number} onChange={(e) => setForm({...form, table_number: Number(e.target.value)})}
             className='w-full border border-gray-500 bg-white/80 cursor-pointer p-4 rounded-2xl shadow mb-4'/>
-        </div>
-
-        <div className='flex flex-col gap-2 mt-4'>
-            <button onClick={() => save(editingId)} className={` w-full cursor-pointer rounded-2xl shadow p-3 font-semibold text-white ${editingId ? "bg-yellow-500 hover:bg-yellow-700 transition" : "bg-[#7dd607]   hover:bg-[#65af04] transition"} cursor-pointer`}>
+                <button onClick={() => save(editingId)} className={` w-full cursor-pointer rounded-2xl shadow p-3 font-semibold text-white ${editingId ? "bg-yellow-500 hover:bg-yellow-700 transition" : "bg-[#7dd607]   hover:bg-[#65af04] transition"} cursor-pointer`}>
                 {editingId ? "Editar Convidado" : "Registrar convidado"}
             </button>
 
@@ -128,6 +129,10 @@ function Admin() {
                 <button onClick={resetForm} className='w-full rounded-2xl shadow bg-rose-500 hover:bg-rose-700 py-3 cursor-pointer text-white font-semibold'>Cancelar</button>
             )}
 
+        </div>
+
+        <div className='flex flex-col gap-2 mt-4 w-full'>
+        
             <div className=''>
                 {guests.map(g =>  (
                 <GuestCard key={g.id} guest={g}>
@@ -140,7 +145,7 @@ function Admin() {
                 </GuestCard>
             ))}
             </div>
-             
+             </div>
         </div>
     </div>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import GuestCard from '../components/GuestCard'
 import Header from '../components/Header'
 import Hero from '../components/Hero'
+import { Search } from 'lucide-react'
 
 function Reception() {
     const [guests, setGuests] = useState([])
@@ -39,7 +40,7 @@ function Reception() {
                     'Content-Type': 'application/json'
                 }
             })
-            
+
             const data = await res.json()
             load()
         } catch {
@@ -54,25 +55,12 @@ function Reception() {
 
     return (
         <div className='bg-[#F5EDE2] min-h-screen p-4'>
-            <Header page={"Recepção"}/>
+            <Header page={"Recepção"} />
             <Hero />
-            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl border border-gray-700 p-4 mt-4 shadow-lg' value={guests.name} onChange={(e) => setSearch(e.target.value)} />
+
+            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl  p-4 mt-30 mb-4 shadow-lg' value={guests.name} onChange={(e) => setSearch(e.target.value)} />
             <div className='flex flex-col justify-between text-center '>
-                <div className='bg-white hover:bg-gray-50 transition w-full rounded shadow mt-4 '>
-                    <p className='font-semibold'>Total</p>
-                    <p className='text-lg 
-                font-bold'>{total}</p>
-                </div>
 
-                <div className='bg-green-300 hover:bg-green-400 transition w-full rounded shadow mt-2'>
-                    <p className='text-lg text-green-700 font-semibold'>Confirmados</p>
-                    <p className='text-green-800 font-bold'>{confirmed}</p>
-                </div>
-
-                <div className='bg-yellow-300 hover:bg-yellow-400 transition w-full rounded shadow mt-2'>
-                    <p className='text-lg text-yellow-700 font-semibold'>Pendentes</p>
-                    <p className='text-lg text-yellow-700 font-bold'>{pending}</p>
-                </div>
             </div>
 
             {loading && (<p>Carregando dashboard...</p>)}
@@ -81,9 +69,10 @@ function Reception() {
                 <GuestCard key={g.id} guest={g}
                 ><button disabled={g.checked_in}
                     onClick={() => checkin(g.id)}
-                    className={`${g.checked_in ? "bg-green-500" : "bg-yellow-500 hover:bg-yellow-700 transition"} p-2 rounded-2xl mt-2 cursor-pointer`}><p className='font-semibold text-white'>{g.checked_in ? "Checkin Realizado" : "Realizar Checkin"}</p>
+                    className={`${g.checked_in ?  "bg-[#7f9b7c] text-white cursor-default"
+                      : "bg-[#d4b06d] hover:opacity-90 text-[#3d2a21]"} p-2 rounded-2xl mt-2 cursor-pointer`}><p className='font-semibold'>{g.checked_in ? "Checkin Realizado" : "Realizar Checkin"}</p>
                     </button>
-                    </GuestCard>
+                </GuestCard>
             ))}
         </div>
     )
