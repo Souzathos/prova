@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import GuestCard from '../components/GuestCard'
 import Header from '../components/Header'
 import Hero from '../components/Hero'
 import { Search } from 'lucide-react'
+import { useReactToPrint } from 'react-to-print'
 
 function Reception() {
     const [guests, setGuests] = useState([])
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(null)
 
+    const ref = useRef()
+    const handlePrint = useReactToPrint({
+        contentRef: ref
+    })
 
     async function load() {
         try {
@@ -54,11 +59,11 @@ function Reception() {
 
 
     return (
-        <div className='bg-[#F5EDE2] min-h-screen p-4'>
+        <div ref={ref} className='bg-[#F5EDE2] min-h-screen p-4 '>
             <Header page={"Recepção"} />
-            <Hero />
+            <Hero guests={guests} funcao={handlePrint} title="Convidados" />
 
-            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl  p-4 mt-30 mb-4 shadow-lg' value={guests.name} onChange={(e) => setSearch(e.target.value)} />
+            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl  p-4 mt-30 mb-4 shadow-lg' value={search} onChange={(e) => setSearch(e.target.value)} />
             <div className='flex flex-col justify-between text-center '>
 
             </div>
