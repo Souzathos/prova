@@ -12,6 +12,9 @@ export class Guest {
     email: string
 
     @Column({nullable: false, length: 11, unique: true}) 
+    cpf: string
+
+    @Column({nullable: false, length: 11, unique: true}) 
     phone: string
 
     @Column({nullable: false})
