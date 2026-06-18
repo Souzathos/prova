@@ -14,8 +14,8 @@ function Login() {
                 headers: {'Content-type': 'application/json'}
             })
             const data = await response.json()
-            localStorage.setItem('role', data.role)
-            localStorage.setItem('token', data.user.token)
+            localStorage.setItem('role', data.user.role)
+            localStorage.setItem('token', data.token)
 
             if(data.user.role === "admin") {
                 window.location.href = "/dashboard"

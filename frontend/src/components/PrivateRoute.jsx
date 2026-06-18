@@ -1,7 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 
-function PrivateRoute({children, allowedRoles}) {
+export function PrivateRoute({children, allowedRoles}) {
     const token = localStorage.getItem('token')
     const role = localStorage.getItem('role')
 
@@ -17,4 +17,3 @@ function PrivateRoute({children, allowedRoles}) {
 
 }
 
-export default PrivateRoute

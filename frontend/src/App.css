@@ -16,4 +16,11 @@
   --success: #6F8F6F;
   --warning: #C99458;
   --danger: #B5564A;
+
+  --border-total: #4a3428;
+  --border-confirmed: #4a3428;
+  --border-pending: #c9a063;
+  
+  --strokeY: #c7b7ad;
+  --strokeX:#9f8878;
 }
