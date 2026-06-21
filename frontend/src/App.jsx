@@ -11,7 +11,6 @@ import Reception from './pages/Reception'
 import Admin from './pages/Admin'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>

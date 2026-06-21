@@ -29,7 +29,9 @@ function Header({page}) {
                 )}
             </div>
 
-            <button className='flex items-center justify-center cursor-pointergap-2 px-4 py-2 rounded-full bg-[var(--dark-brown)] text-white'><LogOut size={18} />Sair</button>
+            <button className='flex items-center justify-center cursor-pointer gap-2 px-4 py-2 rounded-full bg-[var(--dark-brown)] text-white' onClick={logout}>
+                <LogOut size={18} />Sair
+            </button>
         </div>
 
     </div>

@@ -51,7 +51,7 @@ function Dashboard() {
 
       const chartData = [
     { name: "Total", value: total, fill: "var(--border-total)" },
-    { name: "Confirmados", value: confirmed, fill: "var(--border-confirmed)" },
+    { name: "Confirmados", value: confirmed, fill: "var(--success)" },
     { name: "Pendentes", value: pending, fill: "var(--border-pending)" }
   ]
   return (
@@ -85,7 +85,7 @@ function Dashboard() {
 
                     <Tooltip 
                         contentStyle={{
-                            backgroundColor: "#fffaf7",
+                            backgroundColor: "#ffff",
                             border: "1px solid #eaded6",
                             borderRadius: "12px"
                         }}

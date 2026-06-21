@@ -68,6 +68,7 @@ function Admin() {
                 })
                 if(!res.ok) throw new Error('Erro ao criar convidado')
             }
+            setError(null)
             resetForm()
             load()
         } catch(err) {
@@ -115,7 +116,7 @@ function Admin() {
   return (
     <div className='p-4 min-h-screen bg-[var(--cream)]'>
         <Header page="Painel Administrativo" />
-        <Hero guests={guests} funcao={handlePrint} title="Administrativo"/>
+        <Hero guests={guests} funcao={handlePrint} title="do Admin"/>
 
         <div className='flex flex-col justify-between gap-10 mt-35 md:flex-row'>
             <div className='gap-2 mt-5 bg-white rounded-2xl shadow p-6 md:w-1/2'>
