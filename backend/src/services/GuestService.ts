@@ -47,23 +47,19 @@ export class GuestService {
     }
 
     async update(guestId:number, data:any) {
-        const guest = await this.repo.findOneBy({id: guestId})
-        if(!guest) throw new Error('Convidado nao encontrado')
+        const exists = await this.repo.findOneBy({id: guestId})
+        if(!exists) throw new Error('Convidado nao encontrado')
 
-        // o front manda só o número da mesa; aqui trocamos pela relação (objeto TableConfig)
+        // o front manda só o número da mesa; trocamos pelo objeto TableConfig antes de salvar
         if(data.table_number) {
             const tableConfig = await this.tableRepo.findOneBy({table_number: data.table_number})
             if(!tableConfig) throw new Error('Mesa não encontrada')
-            guest.table_number = tableConfig
+            data.table_number = tableConfig
         }
 
-        guest.name  = data.name  ?? guest.name
-        guest.email = data.email ?? guest.email
-        guest.cpf   = data.cpf   ?? guest.cpf
-        guest.phone = data.phone ?? guest.phone
-
-        return this.repo.save(guest)   // save entende a relação; update não
+        return this.repo.update(guestId, data)
     }
+
 
     async delete(id:number) {
         const exists = await this.repo.findOneBy({id})
