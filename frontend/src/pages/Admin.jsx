@@ -44,12 +44,15 @@ function Admin() {
         }
     }
 
-    async function save(id) {
+    async function save() {
         try {
             if (!form.name || !form.email || !form.cpf || !form.phone  || !form.table_number) throw new Error('Formulário incompleto.')
 
+            // usa o id do convidado em edição (editingId); no cadastro não há id
             if (editingId) {
-                const res = await fetch(`http://localhost:3000/guest/update/${id}`, {
+                // confirmação antes de salvar a edição (ação crítica), igual ao delete
+                if (!confirm('Deseja mesmo salvar as alterações?')) return
+                const res = await fetch(`http://localhost:3000/guest/update/${editingId}`, {
                     method: 'PUT',
                     body: JSON.stringify(form),
                     headers: {
@@ -177,7 +180,7 @@ function Admin() {
                         onChange={(e) => setForm({ ...form, table_number: Number(e.target.value) })} />
 
                     <div className='flex gap-5'>
-                        <button onClick={(g) => save(g.id)} className={`w-full  p-4 rounded-full shadow cursor-pointer ${editingId ? 'bg-[var(--warm-gold)] text-[var(--dark-brown)]' : 'bg-[var(--dark-brown)] text-white'} transition`}>{editingId ? "Atualizar" : "Cadastrar"}</button>
+                        <button onClick={() => save()} className={`w-full  p-4 rounded-full shadow cursor-pointer ${editingId ? 'bg-[var(--warm-gold)] text-[var(--dark-brown)]' : 'bg-[var(--dark-brown)] text-white'} transition`}>{editingId ? "Atualizar" : "Cadastrar"}</button>
 
                         {editingId && (
                             <button className='w-full p-4 rounded-full bg-[var(--ivory)] border border-[var(--warning)] text-[var(--warning)] cursor-pointer transition' onClick={resetForm}>Cancelar</button>
