@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import GuestCard from '../components/GuestCard'
 import Header from '../components/Header'
 import Hero from '../components/Hero'
-import { useReactToPrint } from 'react-to-print'
 
 function Admin() {
     const [guests, setGuests] = useState([])

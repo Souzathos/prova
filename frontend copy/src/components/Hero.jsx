@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useReactToPrint } from 'react-to-print'
 import MiniCard from './MiniCard'
 
 function Hero({ guests, funcao, title }) {

@@ -1,0 +1,3244 @@
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║  PROJECT DUMP — /Users/souzathos/prova                                         ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║  ESTRUTURA DE ARQUIVOS                                                         ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+📁 .git/  [ignorado]
+📁 backend/
+  ⛔ .env
+  ⛔ .gitignore
+  📄 README.md
+  📁 node_modules/  [ignorado]
+  📄 package.json
+  📁 src/
+    📁 config/
+      📄 data-source.ts
+    📁 controllers/
+      📄 AuthController.ts
+      📄 GuestController.ts
+      📄 TableController.ts
+    📄 hash.ts
+    📁 middlewares/
+      📄 authMiddleware.ts
+      📄 roleMiddleware.ts
+    📁 models/
+      📄 Guest.ts
+      📄 TableConfig.ts
+      📄 User.ts
+    📁 routes/
+      📄 dashboardRoutes.ts
+      📄 guestRoutes.ts
+      📄 index.ts
+      📄 tableRoutes.ts
+      📄 userRoutes.ts
+    📄 server.ts
+    📁 services/
+      📄 AuthService.ts
+      📄 GuestService.ts
+    📁 utils/
+      📄 jwt.ts
+    📁 validators/
+      📄 guestValidator.ts
+  📄 tsconfig.json
+📁 frontend/
+  ⛔ .gitignore
+  📄 ESTUDO-FRONT.md
+  📄 README.md
+  📄 eslint.config.js
+  📄 index.html
+  📁 node_modules/  [ignorado]
+  📄 package.json
+  📁 public/
+    ⛔ favicon.svg
+    ⛔ icons.svg
+  📁 src/
+    📄 App.css
+    📄 App.jsx
+    📁 assets/
+      ⛔ hero.png
+      📁 images/
+        ⛔ img-login.jpg
+      ⛔ react.svg
+      ⛔ vite.svg
+    📁 components/
+      📄 GuestCard.jsx
+      📄 Header.jsx
+      📄 Hero.jsx
+      📄 MiniCard.jsx
+      📄 PrivateRoute.jsx
+    📄 index.css
+    📄 main.jsx
+    📁 pages/
+      📄 Admin.jsx
+      📄 Dashboard.jsx
+      📄 Login.jsx
+      📄 Reception.jsx
+  📄 vite.config.js
+📁 frontend copy/
+  ⛔ .gitignore
+  📄 README.md
+  📄 eslint.config.js
+  📄 index.html
+  📄 package.json
+  📁 public/
+    ⛔ favicon.svg
+    ⛔ icons.svg
+  📁 src/
+    📄 App.css
+    📄 App.jsx
+    📁 assets/
+      📁 images/
+        ⛔ img-login.jpg
+    📁 components/
+      📄 GuestCard.jsx
+      📄 Header.jsx
+      📄 Hero.jsx
+      📄 MiniCard.jsx
+      📄 PrivateRoutes.jsx
+    📄 index.css
+    📄 main.jsx
+    📁 pages/
+      📄 Admin.jsx
+      📄 Dashboard.jsx
+      📄 Login copy.jsx
+      📄 Login.jsx
+      📄 Reception.jsx
+  📄 vite.config.js
+📄 script.js
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║  CONTEÚDO DOS ARQUIVOS                                                         ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/config/data-source.ts
+────────────────────────────────────────────────────────────────────────────────
+import { DataSource } from "typeorm";
+import * as dotenv from 'dotenv'
+import { User } from "../models/User";
+import { Guest } from "../models/Guest";
+import { TableConfig } from "../models/TableConfig";
+
+dotenv.config()
+
+export const AppDatSource = new DataSource({
+    type: 'mysql',
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    entities: [User, Guest, TableConfig],
+    synchronize: true,
+    logging: true
+})
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/controllers/AuthController.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Request, Response } from "express";
+import { AuthService } from "../services/AuthService";
+import { generateToken } from "../utils/jwt";
+
+export class AuthController {
+    private service = new AuthService()
+
+    async login(req: Request, res:Response) {
+        try {
+            const {email, password} = req.body
+            const user = await this.service.login(email, password)
+
+            const token = generateToken({
+                id: user.id,
+                email: user.email,
+                role: user.role
+            })
+
+            const safe = {...user}
+            delete(safe as any).password
+
+            return res.status(200).json({user: safe, token})
+        } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }   
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/controllers/GuestController.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Request, Response } from "express";
+import { GuestService } from "../services/GuestService";
+import { guestSchema } from "../validators/guestValidator";
+
+export class GuestController {
+    private service = new GuestService()
+
+    async register(req:Request, res:Response) {
+        try  {
+            const data = guestSchema.parse(req.body)
+            const user = await this.service.register(data)
+
+            return res.status(201).json(user)
+        } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+
+    async list(req: Request, res:Response) {
+        try {
+            const {name, status, table_number} = req.query
+            const guest = await this.service.list(name as string, status as string, Number(table_number))
+
+            return res.status(200).json(guest)
+        } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }
+    } 
+
+    async update(req:Request, res:Response) {
+        try {
+            const guest = await this.service.update(Number(req.params.id), req.body)
+
+            return res.status(201).json(guest)
+        } catch(e:any) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+
+    async delete(req:Request, res:Response) {
+        try {
+            const guest = await this.service.delete(Number(req.params.id))
+
+            return res.status(200).json(guest)
+        } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+
+    async checkin(req:Request, res:Response) {
+        try {
+            const guest = await this.service.checkin(Number(req.params.id))
+            
+            return res.status(200).json(guest)
+        } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+
+    async dashboard(req:Request, res:Response) {
+        try {
+            const dash = await this.service.dashboard()
+
+            return res.status(200).json(dash)
+        } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+
+    async removeCheckin(req:Request, res:Response) {
+        try {
+            const guest = await this.service.removeCheckin(Number(req.params.id))
+
+            return res.status(200).json(guest)
+        } catch(e: any ) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/controllers/TableController.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Request, Response } from "express";
+import { AppDatSource } from "../config/data-source";
+import { TableConfig } from "../models/TableConfig";
+
+export class TableController {
+    private repo = AppDatSource.getRepository(TableConfig)
+
+    async list(req:Request, res:Response) {
+        try{const tables = await this.repo.find({order: {table_number : 'ASC'}})
+
+        return res.status(200).json(tables)}
+        catch(e:any) {
+            return res.status(400).json({message: e.message})
+        }
+
+    }
+
+    async create(req: Request, res: Response) {
+        try {
+            const data = req.body
+            const exists = await this.repo.findOne({ where: { table_number: data.table_number } })
+            if (exists) throw new Error('Messa já existe')
+
+            const table = this.repo.create(data)
+            await this.repo.save(table)
+
+            return res.status(201).json(table)
+        } catch (e: any) {
+            return res.status(400)
+                .json({ message: e.message })
+        }
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/middlewares/authMiddleware.ts
+────────────────────────────────────────────────────────────────────────────────
+import { NextFunction, Request, Response } from "express";
+import { verifyToken } from "../utils/jwt";
+
+export const authMiddleware = (req:Request, res:Response, next:NextFunction) => {
+    const header = req.headers.authorization
+
+    if(!header || !header.startsWith('Bearer ')) {
+      return res.status(403).json('Token nao fornecido')
+    } 
+
+    const token = header.split(' ')[1]
+    const decoded = verifyToken(token)
+    if(!decoded) {
+      return res.status(401).json('Token inválido')
+    }
+
+    (req as any).user = decoded
+
+    next()
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/middlewares/roleMiddleware.ts
+────────────────────────────────────────────────────────────────────────────────
+import { NextFunction, Request, Response } from "express"
+
+export const roleMiddleware = (role: string) => {
+
+    return(req: Request, res: Response, next: NextFunction) => {
+        try {
+            if((req as any).user.role !== role) {
+                return res.status(401).json('Acesso negado')
+            }
+        } catch {
+            return null
+        }
+        next()
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/models/Guest.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { TableConfig } from "./TableConfig";
+
+@Entity('guests')
+export class Guest {
+    @PrimaryGeneratedColumn()
+    id: number
+
+    @Column({nullable: false, length: 255})
+    name: string
+
+    @Column({nullable: false, length: 255, unique: true}) 
+    email: string
+
+    @Column({nullable: false, length: 11, unique: true}) 
+    cpf: string
+
+    @Column({nullable: false, length: 11, unique: true}) 
+    phone: string
+
+    @Column({nullable: false, default: false})
+    checked_in: boolean
+
+    @Column({type: 'timestamp', nullable: true})
+    checked_at: Date | null
+        
+    @ManyToOne(() => TableConfig, (t) => t.guests, {nullable: false, onDelete: 'RESTRICT'})
+    @JoinColumn()
+    table_number: TableConfig
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/models/TableConfig.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Guest } from "./Guest";
+
+@Entity('tables_config')
+export class TableConfig {
+    @PrimaryGeneratedColumn()
+    id: number
+
+    @Column({nullable: false, unique: true})
+    table_number: number
+
+    @Column({nullable: false})
+    max_lenght: number
+
+    @OneToMany(() => Guest, (g) => g.table_number)
+    guests: Guest[] 
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/models/User.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { nullable } from "zod";
+
+@Entity('users')
+export class User  {
+    @PrimaryGeneratedColumn()
+    id: number
+
+    @Column({nullable: false, length: 255})
+    name: string
+
+    @Column({nullable: false, length: 255, unique: true})
+    email: string
+    
+    @Column({nullable: false, length: 11, unique: true})
+    cpf: string
+
+    @Column({nullable: false, length: 255})
+    password: string
+
+    @Column({nullable: false})
+    role: 'admin' | 'recepcionista'
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/routes/dashboardRoutes.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Router } from "express";
+import { GuestController } from "../controllers/GuestController";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
+
+const dashboardRoutes = Router()
+const dash = new GuestController()
+
+dashboardRoutes.get('/', authMiddleware, roleMiddleware("admin"), dash.dashboard.bind(dash) )
+
+export default dashboardRoutes
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/routes/guestRoutes.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Router } from "express";
+import { GuestController } from "../controllers/GuestController";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
+
+const guestRoutes = Router()
+const guest = new GuestController()
+guestRoutes.post('/register', authMiddleware, roleMiddleware("admin"), guest.register.bind(guest))
+guestRoutes.get('/list', authMiddleware, guest.list.bind(guest))
+guestRoutes.put('/update/:id', authMiddleware, roleMiddleware("admin"), guest.update.bind(guest))
+guestRoutes.delete('/delete/:id', authMiddleware, roleMiddleware("admin"), guest.delete.bind(guest))
+guestRoutes.post('/checkin/:id', authMiddleware, guest.checkin.bind(guest))
+guestRoutes.post('/remove-checkin/:id', authMiddleware, roleMiddleware("admin"), guest.removeCheckin.bind(guest))
+
+export default guestRoutes
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/routes/index.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Router } from "express";
+import userRoutes from "./userRoutes";
+import guestRoutes from "./guestRoutes";
+import dashboardRoutes from "./dashboardRoutes";
+import tableRoutes from "./tableRoutes";
+
+const routes = Router()
+
+routes.use('/user', userRoutes)
+routes.use('/guest', guestRoutes)
+routes.use('/dashboard', dashboardRoutes)
+routes.use('/table', tableRoutes)
+
+export default routes
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/routes/tableRoutes.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Router } from "express";
+import { TableController } from "../controllers/TableController";
+
+const tableRoutes = Router()
+const table = new TableController()
+
+tableRoutes.post('/create', table.create.bind(table))
+tableRoutes.get('/list', table.list.bind(table))
+
+export default tableRoutes
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/routes/userRoutes.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Router } from "express";
+import { AuthController } from "../controllers/AuthController";
+
+const userRoutes = Router()
+const auth = new AuthController()
+
+userRoutes.post('/login', auth.login.bind(auth))
+
+export default userRoutes
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/services/AuthService.ts
+────────────────────────────────────────────────────────────────────────────────
+import { AppDatSource } from "../config/data-source";
+import { User } from "../models/User";
+import bcrypt from 'bcrypt'
+
+
+export class AuthService {
+    private repo = AppDatSource.getRepository(User)
+
+    async login(email: string, password: string) {
+        const user = await this.repo.findOneBy({email})
+        if(!user) throw new Error('Usuário nao encontrado')
+        const validate = await bcrypt.compare(password, user.password)
+        if(!validate) throw new Error('Senha inválida')
+
+        return user
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/services/GuestService.ts
+────────────────────────────────────────────────────────────────────────────────
+import { Like } from "typeorm";
+import { AppDatSource } from "../config/data-source";
+import { Guest } from "../models/Guest";
+import { TableConfig } from "../models/TableConfig";
+
+export class GuestService {
+    private repo = AppDatSource.getRepository(Guest)
+    private tableRepo = AppDatSource.getRepository(TableConfig)
+
+    async register(data: any) {
+        const exists = await this.repo.findOneBy({email: data.email})
+        if(exists) throw new Error('Email já cadastrado')
+        const tableConfig = await this.tableRepo.findOne({
+            where: {table_number: data.table_number},
+            relations: ['guests']
+        })
+
+        if(!tableConfig) throw new Error('Mesa não encontrada')
+
+        if(tableConfig.guests.length >= tableConfig.max_lenght){
+            throw new Error(`Mesa ${tableConfig.table_number} está lotada (capacidade: ${tableConfig.max_lenght})`)
+        }
+
+        const guest = this.repo.create({
+            name: data.name, 
+            cpf: data.cpf,
+            email: data.email,
+            phone: data.phone,
+            table_number: tableConfig
+        })
+
+        return this.repo.save(guest)
+    }
+
+    async list(name?:string, status?:string, table_number?: number) {
+        const where: any = {}
+
+        if(name) where.name = Like(`%${name}%`)
+        if(table_number) where.table_number = {number : table_number}  
+
+        const guests = await this.repo.find({
+            where, 
+            relations: ['table_number']
+        })
+
+        if(status === "checked_in") return guests.filter(g => g.checked_in)
+        if(status === "pendente") return guests.filter(g => !g.checked_in)
+        return guests
+
+    }
+
+    async update(guestId:number, data:any) {
+        const exists = await this.repo.findOneBy({id: guestId})
+        if(!exists) throw new Error('Convidado nao encontrado')
+        const guest = await this.repo.update(guestId, data)
+        
+        return guest
+    }
+
+    async delete(id:number) {
+        const exists = await this.repo.findOneBy({id})
+        if(!exists) throw new Error('Convidado nao encontrado')
+        
+        await this.repo.delete(id)
+
+        return this.list()
+    }
+
+    async checkin(id: number) {
+        const guest = await this.repo.findOneBy({id})
+        if(!guest) throw new Error('Convidado nao encontrado')
+        if(guest.checked_in) throw new Error('Check-in Ja realizado')
+
+        guest.checked_in = true
+        guest.checked_at = new Date()
+
+        return this.repo.save(guest)
+    }
+
+    async removeCheckin(id: number) {
+        const guest = await this.repo.findOneBy({id})
+        if(!guest) throw new Error('convidado não encontrado')
+        if(!guest.checked_in) throw new Error('Check-in não realizado')
+
+        guest.checked_in = false
+        guest.checked_at = null
+
+        return this.repo.save(guest)
+    }
+
+    async dashboard() {
+        const guests = await this.repo.find()
+
+        const total = guests.length
+        const confirmed = guests.filter(g => g.checked_in).length
+        const pending = total - confirmed
+        const occupancy = Number((confirmed/total)*100).toFixed(2)
+
+        return {
+            total,
+            confirmed,
+            pending,
+            occupancy
+        }
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/utils/jwt.ts
+────────────────────────────────────────────────────────────────────────────────
+import * as dotenv from 'dotenv'
+import jwt from 'jsonwebtoken'
+
+dotenv.config()
+
+const JWT_SECRET = process.env.JWT_SECRET as string
+const JWT_EXPIRES_IN = Number(process.env.JWT_EXPIRES_IN)
+
+export const generateToken = (payload: object) => {
+    return jwt.sign(payload, JWT_SECRET, {
+        expiresIn: JWT_EXPIRES_IN
+    })
+}
+
+export const verifyToken = (token: string) => {
+    try{
+        return jwt.verify(token, JWT_SECRET)
+    } catch {
+        return null
+    }
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/validators/guestValidator.ts
+────────────────────────────────────────────────────────────────────────────────
+import {z} from 'zod'
+
+export const guestSchema = z.object({
+    name: z.string().min(3, 'Nome muito pequeno.'),
+    email: z.email('Email inválido'),
+    cpf: z.string().min(11, 'CPF deve ter exatamente 11 digitos.').max(11, 'CPF deve ter exatamente 11 digitios'),
+    phone: z.string().min(11, 'Número inválido'),
+    table_number: z.number()
+})
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/hash.ts
+────────────────────────────────────────────────────────────────────────────────
+import bcrypt from 'bcrypt'
+
+async function hashada() {
+    const hash = await bcrypt.hash('12345678', 10)
+    console.log(hash)
+}
+
+hashada()
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/src/server.ts
+────────────────────────────────────────────────────────────────────────────────
+import express from 'express'
+import * as dotenv from 'dotenv'
+import { AppDatSource } from './config/data-source'
+import routes from './routes'
+import cors from 'cors'
+
+dotenv.config()
+const port = Number(process.env.PORT)
+const app = express()
+app.use(cors())
+app.use(express.json())
+
+
+AppDatSource.initialize().then(() => {
+    console.log('Banco conectado')
+    app.use(routes)
+    app.listen(port, () => {
+        console.log(`Servidor rodando na porta ${port}`)
+    })
+})
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/package.json
+────────────────────────────────────────────────────────────────────────────────
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx ts-node-dev src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.7.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.22.3",
+    "reflect-metadata": "^0.2.2",
+    "ts-node-dev": "^2.0.0",
+    "typeorm": "^0.3.29",
+    "typescript": "^6.0.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19"
+  }
+}
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/README.md
+────────────────────────────────────────────────────────────────────────────────
+# Back-end do Wedding pass!
+
+
+## Para iniciar o projeto, siga as instruções abaixo:
+- 1º Para baixar as dependenicas, entre na pasta /backend e rode: npm i
+- 2º Configure o .env: Crie o arquivo .env na pasta "src", e coloque as seguintes informações: DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=prova
+DB_USERNAME=root
+DB_PASSWORD=root
+
+JWT_SECRET=supersegredo
+JWT_EXPIRES_IN=86400
+
+PORT=3000
+
+- 3º Após instalar as dependencias e configurar o .env, para iniciar o projeto rode: npm run dev
+
+
+## Mesmo com o typeORM criando as tabelas, segue o script do banco de dados (mysql), com as tabelas e inserts dos usuários/convidados.:
+CREATE SCHEMA IF NOT EXISTS prova;
+USE prova;
+
+CREATE TABLE IF NOT EXISTS guests (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  phone VARCHAR(11) NOT NULL UNIQUE,
+  table_number INT NOT NULL,
+  checked_in BOOLEAN NOT NULL DEFAULT false
+ );
+
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  cpf VARCHAR(11) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('admin', 'recepcionista') NOT NULL
+);
+
+
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Arthur Silva', 'arthursilva@gmail.com', '51984443326', 5, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Davi Zarpellon', 'davizarp@gmail.com', '51981754427', 10, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Tiago Souza', 'tiago51@gmail.com', '51981723642', 3, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Henzo Silva', 'henzob@gmail.com', '51976283019', 10, false);
+INSERT INTO guests (name, email, phone, table_number, checked_in) VALUES ('Bia Nascimento', 'bianascimento@gmail.com', '51995421678', 5, false);
+
+
+
+INSERT INTO users (name, email, cpf, password, role) VALUES ("admin", "admin@gmail.com", "12345678910", "$2b$10$IJLtkIJBWXVMIkGVDuNQn.e/dv9W9QlWpYSH3g59PqQM3MnNx6YM6", "admin")
+
+INSERT INTO users (name, email, cpf, password, role) VALUES ("recepcionista", "recepcionista@gmail.com", "12345678911", "$10$Ettd1ukEqORFFUDb7lEj5.VtjHnUuQMI/IeB5/tsZsJfO0tfZ.Tki", "recepcionista")
+
+### Para rodar, cole esse script dentro do mysql workbench, e clique no primeiro icone de raio que fica no header do arquivo.
+
+## Rotas
+*LEMBRE-SE de adicionar o token da respectiva role necessária para realizar a rota (mencionado abaixo quais roles são permitidas para suas respectivas rotas), adicione o token na sua rota em Auth -> Bearer -> (seu token) OU Headers -> (adicionar novo campo) header -> Authorization | value -> (seu token) . O token é entregue no body ao fazer login como user. admin e recepcionista tem tokens diferente a cada vez que fazem login.*
+### Login de usuário
+- método: POST http://localhost:3000/user/login
+- No body, coloque email e senha. 
+ex: {
+    "email": "admin@gmail.com",
+    "password": "12345678"
+}
+
+### Cadastro de Convidado - Somente admin permitido
+- método: POST http://localhost:3000/guest/register
+- no body, coloque informações necessárias para o cadastro do convidado.
+ex: {
+    "name": "convidado 1",
+    "email": "convidado1@gmail.com",
+    "phone": "51999999999",
+    "table_number": 5,
+}
+
+## Listagem de convidados - Admin e Recepcionista permitidos
+- Método: GET http://localhost:3000/guest/list (isso para listar todos os convidados.)
+- Método: GET http://localhost:3000/guest/list?name=convidado 1 (isso vai listar o convidado pelo nome buscado nos parametros da URL, nesse exemplo, retornaria o convidado 1)
+- Neste método nao é necessario body.
+
+## Edição de convidados - Somente admin permitido
+- Método: PUT http://localhost:3000/guest/update/:id
+- Nesse método, devemos passar o id do convidado que desejamos atualizar.
+- no body, coloque as informações que deseja que sejam alteradas.
+ex: {
+    "name": "convidado 1 atualizado"
+}
+
+## Exclusão de convidado - Somente admin permitido
+- Método: DELETE http://localhost:3000/guest/delete/:id
+- Nesse método devemos passar o id do convidado que desejamos excluir direto na URL.
+
+## Check-in do convidado - admin e recepcionista permitidos
+- Método: POST http://localhost:3000/guest/checkin/:id
+- Nesse método devemos passar o id do convidado que desejamos realizar checkin direto na URL.
+
+## Dashboard - Somente admin permitido
+- Método: GET http://localhost:3000/dashboard
+- Esse método irá listar a quantidade total de convidados, os confirmados, pendentes, e a ocupação em %
+- Neste método nao é necessario body.
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  backend/tsconfig.json
+────────────────────────────────────────────────────────────────────────────────
+{
+  
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "esnext",
+   "outDir":"./dist",
+   "rootDir":"./src",
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+   "esModuleInterop": true,
+   "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+  },
+  "include":["./src/**/*.ts"],
+  "exclude":["./dist","node_modules"]
+}
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/components/GuestCard.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { Mail, MapPin, Phone } from 'lucide-react'
+import React from 'react'
+
+function GuestCard({ guest, children }) {
+  return (
+    <div className='bg-[var(--ivory)] border border-[var(--cream)] rounded-2xl p-4 shadow transition mb-4'>
+      <div className='flex flex-col xl:flex-row justify-between xl:items-center gap-2'>
+        <div className='flex flex-col sm:flex-row w-full sm:items-start gap-4 min-w-0'>
+          <div className='bg-[var(--cream)] min-w-14 w-14 h-14 rounded-full shadow-inner'>
+
+          </div>
+          <div className='flex flex-col gap-1'>
+            <div className='flex items-center gap-2'>
+              <p>{guest.name}</p>
+
+              <div className='flex items-center text-sm space-x-1 text-[var(--warm-gold)]'>
+                <MapPin size={14} />
+                <p>{guest.table_number?.number}</p>
+              </div>
+            </div>
+
+            <div className='flex space-x-2 items-center'>
+              <Mail size={14} />
+              <p>{guest.email}</p>
+
+              <Phone size={14}/>
+              <p>{guest.phone}</p>
+            </div>
+
+            <div className='mt-3'>
+              {guest.checked_in ? (
+                <span className='items-center gap-2 bg-[var(--light-green)] text-[var(--ivory)] p-2 text-xs rounded-full shadow'>Check-in realizado</span>
+              ) : (
+                <span className='items-center gap-2 bg-[var(--warning)] text-[var(--ivory)] p-2 text-xs rounded-full shadow'>Pendente</span>
+              )}
+            </div>
+          </div>
+        </div>
+            {children}
+      </div>
+    </div>
+  )
+}
+
+export default GuestCard
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/components/Header.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+import { Link } from 'react-router-dom'
+import {LogOut } from 'lucide-react'
+
+function Header({page}) {
+    const role = localStorage.getItem('role') 
+
+    function logout() {
+        localStorage.clear()
+        window.location.href = "/"
+    }
+  return (
+    <div className='w-full bg-[var(--ivory)] p-4 rounded-2xl shadow-xl'>
+        <div className='flex items-center justify-between sm:flex flex-wrap'>
+            <div className='flex flex-col'>
+                    <p className='text-sx text-[var(--warm-gold)] font-mono'>Wedding Pass</p>
+                    <h1 className='text-3xl font-serif font-light'>Recepção</h1>
+            </div>
+
+            <div className='flex space-x-6 items-center shadow-lg p-2 rounded-2xl '>
+                {role === "admin" && (
+                    <Link className='' to="/dashboard">Dashboard</Link>
+                )}
+
+                <Link to="/reception">Recepção</Link>
+
+                {role === "admin" && (
+                    <Link to="/admin">Administração</Link>
+                )}
+            </div>
+
+            <button className='flex items-center justify-center cursor-pointer gap-2 px-4 py-2 rounded-full bg-[var(--dark-brown)] text-white' onClick={logout}>
+                <LogOut size={18} />Sair
+            </button>
+        </div>
+
+    </div>
+  )
+}
+
+export default Header
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/components/Hero.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+import MiniCard from './MiniCard'
+
+function Hero({guests, funcao, title}) {
+    const total = guests.length
+    const confirmed = guests.filter((g) => g.checked_in).length
+    const pending = total - confirmed
+  return (
+    <div className='bg-(--dark-brown) rounded-2xl shadow-xl text-white p-6  mt-5 '>
+        <div className='flex justify-between items-center mb-6'>
+            <div className='space-y-2'>
+                <p className='text-lg text-(--warning)'>Controle de recepção</p>
+                <h1 className='text-5xl font-serif text-white'>Painel <span className='text-(--warning) font-serif'>{title}</span></h1>
+                <p className='text-lg text-white/80'>Gerencie check-ins, acompanhe confirmações e organize a recepção em tempo real</p>
+            </div>
+            <div>
+                <button onClick={funcao} className='text-white text-lg border border-(--warning) rounded-full p-4 cursor-pointer'>Exportar relatório</button>
+            </div>
+        </div>
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <MiniCard title="Total" value={total} description="Convidados Cadastrados" />
+            <MiniCard title="Confirmados" value={confirmed} border="#6F8F6F" description="RSVP confirmado" />
+            <MiniCard title="Pendentes" value={pending} border="var(--warning)" description="Aguardando resposta" />
+        </div>
+    </div>
+  )
+}
+
+export default Hero
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/components/MiniCard.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+
+function MiniCard({title, value, border, description}) {
+  return (
+    <div className=' bg-[var(--ivory)] p-4 rounded shadow border-l-4' style={{
+      borderColor: border
+    }}>
+        <p className='uppercase  tracking-widest text-[var(--warm-gold)] mb-3'>{title}</p>
+        <h2 className=' text-[var(--dark-brown)] font-serif wrap-break-word text-5xl mb-2'>{value}</h2>
+        <p className='text-[var(--warm-gold)] text-sm '>{description}</p>
+    </div>
+  )
+}
+
+export default MiniCard
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/components/PrivateRoute.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+import { Navigate } from 'react-router-dom'
+
+export function PrivateRoute({children, allowedRoles}) {
+    const token = localStorage.getItem('token')
+    const role = localStorage.getItem('role')
+
+    if(!token) {
+        return <Navigate to="/" />
+    }
+
+    if(allowedRoles && !allowedRoles.includes(role)) {
+        return <Navigate to="/reception" />
+    }
+
+    return children
+}
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/pages/Admin.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+import { useEffect } from 'react'
+import { useRef } from 'react'
+import { useState } from 'react'
+import { useReactToPrint } from 'react-to-print'
+import Header from '../components/Header'
+import Hero from '../components/Hero'
+import GuestCard from '../components/GuestCard'
+
+function Admin() {
+    const [guests, setGuests] = useState([])
+    const [editingId, setEditingId] = useState(null)
+    const [loading, setLoading] = useState(null)
+    const [error, setError] = useState(null)
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        cpf: "",
+        phone: "",
+        table_number: ""
+    })
+
+    const ref = useRef()
+    const handlePrint = useReactToPrint({
+        contentRef: ref
+    })
+
+    async function load() {
+        try {
+            setLoading(true)
+            const res = await fetch('http://localhost:3000/guest/list', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            const data = await res.json()
+            setGuests(data)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function save(id) {
+        try {
+            if (!form.name || !form.email || !form.cpf || !form.phone  || !form.table_number) throw new Error('Formulário incompleto.')
+
+            if (editingId) {
+                const res = await fetch(`http://localhost:3000/guest/update/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(form),
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                if (!res.ok) throw new Error('Erro ao editar convidado')
+            } else {
+                const res = await fetch(`http://localhost:3000/guest/register`, {
+                    method: 'POST',
+                    body: JSON.stringify(form),
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                if (!res.ok) throw new Error('Erro ao cadastrar convidado')
+            }
+            setError(null)
+            resetForm()
+            load()
+        } catch (e) {
+            setError(e)
+            throw new Error('Erro ao salvar convidado', e)
+        }
+    }
+
+    function edit(g) {
+        setEditingId(g.id)
+        setForm({
+            name: g.name || "",
+            email: g.email || "",
+            cpf: g.cpf || "",
+            phone: g.phone || "",
+            table_number: g.table_number?.number || ""
+        })
+    }
+
+    function resetForm() {
+        setEditingId(null)
+        setForm({
+            name: "",
+            email: "",
+            cpf: "",
+            phone: "",
+            table_number: ""
+        })
+    }
+
+    async function remove(id) {
+        if (!confirm('Deseja mesmo excluir?')) return
+        const data = await fetch(`http://localhost:3000/guest/delete/${id}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        load()
+    }
+
+
+    async function removeCheckin(id) {
+        try {
+            if(!confirm('Deseja desfazer o checkin?')) return
+            const res = await fetch(`http://localhost:3000/guest/remove-checkin/${id}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            const data = res.json()
+            load()
+        } catch(e) {
+            setError(e)
+            throw new Error('Não foi possivel desfazer o checkin', e)
+        }
+    }
+    useEffect(() => {
+        load()
+    }, [])
+
+    useEffect(() => {
+        if(!error) return
+        const t = setTimeout(() => setError(null), 3000)
+        return () => clearTimeout(t)
+    }, [error])
+
+
+    return (
+        <div className='p-4 min-h-screen bg-[var(--cream)]'>
+            <Header page="Painel Administrativo" />
+            <Hero guests={guests} funcao={handlePrint} title="do Admin" />
+
+            <div className='flex flex-col justify-between gap-10 mt-15 md:flex-row'>
+                <div className='gap-2 bg-[var(--ivory)] rounded-2xl p-6 md:w-1/2'>
+                    <h3 className='text-xs text-[var(--warm-gold)] tracking-widest'>NOVO CONVIDADO</h3>
+                    <h2 className='text-4xl text-[var(--dark-brown)] mb-10 font-serif'>Cadastro</h2>
+                    {error && (<p className='text-xs text-center text-[var(--danger)]'>{error.message}</p>)}
+
+                    <input type="text" value={form.name} placeholder='Nome Completo' className='w-full border-b border-b-[var(--warm-gold)] py-4 cursor-pointer mb-10'
+                        onChange={(e) => setForm({ ...form, name: e.target.value })} />
+
+                    <input type="text" value={form.email} placeholder='E-mail' className='w-full border-b border-b-[var(--warm-gold)] py-4 cursor-pointer mb-10'
+                        onChange={(e) => setForm({ ...form, email: e.target.value })} />
+
+                    <input type="text" value={form.cpf} placeholder='CPF' className='w-full border-b border-b-[var(--warm-gold)] py-4 cursor-pointer mb-10'
+                        onChange={(e) => setForm({ ...form, cpf: e.target.value })} />
+
+                    <input type="text" value={form.phone} placeholder='Telefone' className='w-full border-b border-b-[var(--warm-gold)] py-4 cursor-pointer mb-10'
+                        onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+
+                    <input type="text" value={form.table_number} placeholder='Número da mesa' className='w-full border-b border-b-[var(--warm-gold)] py-4 cursor-pointer mb-10'
+                        onChange={(e) => setForm({ ...form, table_number: Number(e.target.value) })} />
+
+                    <div className='flex gap-5'>
+                        <button onClick={(g) => save(g.id)} className={`w-full  p-4 rounded-full shadow cursor-pointer ${editingId ? 'bg-[var(--warm-gold)] text-[var(--dark-brown)]' : 'bg-[var(--dark-brown)] text-white'} transition`}>{editingId ? "Atualizar" : "Cadastrar"}</button>
+
+                        {editingId && (
+                            <button className='w-full p-4 rounded-full bg-[var(--ivory)] border border-[var(--warning)] text-[var(--warning)] cursor-pointer transition' onClick={resetForm}>Cancelar</button>
+                        )}
+                    </div>
+
+                </div>
+
+                <div ref={ref} className='w-full flex flex-col gap-2 mt-4'>
+                    <div>
+                    {loading && (<p>Carregando convidados...</p>)}
+                    {guests.map(g => (
+                        <GuestCard
+                            key={g.id}
+                            guest={g}
+                        >
+                            <button onClick={() => edit(g)} className='rounded-full bg-[var(--warm-gold)] text-[var(--ivory)] py-2 px-6 transition cursor-pointer'>Editar</button>
+                            <button onClick={() => remove(g.id)} className='rounded-full bg-[var(--danger)] text-[var(--ivory)] py-2 px-6  transition  cursor-pointer'>Excluir</button>
+                            {g.checked_in ? <button className='rounded-full bg-[var(--dusty-rose)] text-[var(--ivory)] py-1 px-6 transition cursor-pointer text-xs' onClick={() => removeCheckin(g.id)}>Remover checkin</button> : null}
+                        </GuestCard>
+                    ))}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Admin
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/pages/Dashboard.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useEffect, useRef, useState } from 'react'
+import Header from '../components/Header'
+import Hero from '../components/Hero'
+import { useReactToPrint } from 'react-to-print'
+import { ResponsiveContainer, BarChart, XAxis, YAxis, Tooltip, Bar, Cell } from 'recharts'
+
+
+function Dashboard() {
+    const [guests, setGuests] = useState([])
+    const [loading, setLoading] = useState(null)
+
+    const ref = useRef()
+
+    const handlePrint = useReactToPrint({
+        contentRef: ref
+    })
+
+    async function load() {
+        try {
+            setLoading(true)
+            const data = await fetch('http://localhost:3000/guest/list', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            const res = await data.json()
+            setGuests(res)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        load()
+        
+    }, [])
+
+    if(loading) {
+        return (
+            <div>
+                Carregando dashboard...
+            </div>
+        )
+    }
+
+    const total = guests.length
+    const confirmed = guests.filter((g) => g.checked_in).length
+    const pending = total - confirmed
+
+      const chartData = [
+    { name: "Total", value: total, fill: "var(--border-total)" },
+    { name: "Confirmados", value: confirmed, fill: "var(--success)" },
+    { name: "Pendentes", value: pending, fill: "var(--border-pending)" }
+  ]
+  return (
+    <div className='p-4 min-h-screen bg-[var(--cream)] overflow-hidden' ref={ref}>
+        <Header page="Dashboard"/>
+        <Hero guests={guests} title="dashboard" funcao={handlePrint} />
+
+        <div className='flex flex-col md:flex-col p-3 bg-[var(--ivory)] mt-10 shadow rounded-2xl '>
+            <div className='flex flex-col mt-5 space-y-3'>
+                <p className='text-[var(--warm-gold)] text-xs tracking-widest uppercase'>Visão Geral</p>
+                <h2 className='text-3xl font-serif text-[var(--dark-brown)]'>Distribuição RSVP</h2>
+            </div>
+
+            <div className='h-64 w-full mt-10'>
+                <ResponsiveContainer height="100%" width="100%">
+                    <BarChart data={chartData}>
+                        <XAxis dataKey="name" stroke='var(--strokeX)'/>
+
+                        <YAxis stroke='var(--strokeY)'/>
+
+                        <Tooltip contentStyle={{
+                            border: '12px',
+                            borderRadius: '12px',
+                            backgroundColor: '#ffff'
+                        }}/>
+
+                        <Bar dataKey="value" radius={[4,4,0,0]}/>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    </div>
+  )
+}
+
+export default Dashboard
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/pages/Login.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useEffect, useState } from 'react'
+
+function Login() {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState(null)
+
+
+    async function handleLogin() {
+        try {
+            const response = await fetch('http://localhost:3000/user/login', {
+                method: 'POST',
+                body: JSON.stringify({email, password}),
+                headers: {'Content-type': 'application/json'}
+            })
+            const data = await response.json()
+            localStorage.setItem('role', data.user.role)
+            localStorage.setItem('token', data.token)
+
+            if(data.user.role === "admin") {
+                window.location.href = "/dashboard"
+            } else {
+                window.location.href = "/reception"
+            }
+        } catch(e) {
+            setError('erro ao fazer login', e)
+        }
+    }
+
+    useEffect(() => {
+        if(!error) return
+        const t = setTimeout(() => setError(null), 3000)
+        return () => clearTimeout(t)
+    })
+  return (
+    <div className='min-h-screen bg-[var(--ivory)] flex items-center justify-center p-6'>
+            <div className='w-full max-w-6xl bg-[var(--cream)] rounded-sm overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-2'>
+
+                <div className='relative hidden lg:block'>
+                    <img src="https://images.pexels.com/photos/15641348/pexels-photo-15641348.jpeg" alt="Wedding"
+                    className='w-full h-full object-cover' />
+                </div>
+
+                <div className='flex items-center justify-center px-8 py-16 bg-[var(--cream)]'>
+                    <div className='w-full max-w-md'>
+                            <p className='text-[var(--warning)] text-sm mb-3'>
+                                Acesso Restrito
+                            </p>
+                            <h1 className='text-6xl font-serif text-[var(--dark-brown)] mb-2'>
+                                Wedding Pass
+                            </h1>
+
+                            <p className='text-[var(--light-brown)] mb-10'>Celebre cada momento</p>
+
+                            <div>
+                               <label className='block text-xs text-[var(--blush)] mb-2'>E-mail</label> 
+
+                               <input type="email" placeholder='example@email.com' value={email} 
+                               onChange={(e) => setEmail(e.target.value)}
+                               className='w-full border-b border-[value(--warm-gold)] bg-transparent py-3 outline-none text-[var(--dark-brown)] placeholder: text[var(--light-brown)] focus:border-[var(--warm-gold)] transition'/>
+                            </div>
+
+                            <div>
+                                <label className='block text-xs  text-[var(--blush)] mt-2'>Senha</label>
+
+                                <input type="password" placeholder='••••••••' value={password} onChange={(e) => setPassword(e.target.value)}
+                                className='w-full border-b border-[value(--warm-gold)] bg-transparent py-3 outline-none text-[var(--dark-brown)] placeholder: text[var(--light-brown)] focus:border-[var(--warm-gold)] transition'/>
+                            </div>
+
+                            {error && (
+                                <p className='text-[var(--danger)] text-xs'>{error}</p>
+                            )}
+
+                            <button onClick={handleLogin}   
+                            className='cursor-pointer w-full bg-[var(--warm-gold)]/80 hover:bg-[var(--warm-gold)] transition py-4 rounded-full mt-6' >
+                                Entrar
+                            </button>
+                    </div>
+                </div>                
+
+            </div>
+    </div>
+  )
+}
+
+export default Login
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/pages/Reception.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+import Header from '../components/Header'
+import Hero from '../components/Hero'
+import { useState } from 'react'
+import { useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
+import { useEffect } from 'react'
+import GuestCard from '../components/GuestCard'
+
+function Reception() {
+    const [guests, setGuests] = useState([])
+    const [search, setSearch] = useState('')
+    const [loading, setLoading] = useState(null)
+
+    const ref = useRef()
+    const handlePrint = useReactToPrint({
+        contentRef: ref
+    })
+
+    async function load() {
+        try {
+            setLoading(true)
+            const res = await fetch('http://localhost:3000/guest/list', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            const data = await res.json()
+            setGuests(data)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        load()
+    }, [])
+
+    const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
+
+    async function checkin(id) {
+        try {
+            const res = await fetch(`http://localhost:3000/guest/checkin/${id}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            const data = await res.json()
+            load()
+        } catch {
+            alert('Check-in já realizado')
+        }
+    }
+
+
+    const total = guests.length
+    const confirmed = guests.filter((g) => g.checked_in).length
+    const pending = total - confirmed
+  return (
+    <div ref={ref} className='p-4 min-h-screen bg-[var(--cream)]'>
+        <Header page="Recepção" />
+
+        <Hero title="Recepção" funcao={handlePrint} guests={guests}/>
+
+        <input type="text" placeholder='Buscar convidado...' className='w-full bg-[var(--ivory)] p-4 border rounded-full mt-10 border-gray-400 shadow-lg mb-5' value={search} onChange={(e) => setSearch(e.target.value)}/>
+
+        {loading && (
+            <p>Carregando convidados...</p>
+        )}
+ 
+        <div className='flex flex-col gap-3'>
+
+        {filtered.map((g) => (
+            <GuestCard key={g.id} guest={g}>
+                <button disabled={g.checked_in}
+                onClick={() => checkin(g.id)}
+                className={`${g.checked_in ? "bg-[var(--success)] text-white cursor-default" : "bg-[var(--warning)] hover:opacity-90 text-white"} py-1 px-4 rounded-2xl mt-2 cursor-pointer`}>
+                    <p className='font-semibold'>{g.checked_in ? "Checkin Realizado" : "Realizar Checkin "}</p>
+
+                </button>
+            </GuestCard>
+        ))}
+                </div>
+
+    </div>
+  )
+}
+
+export default Reception
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/App.css
+────────────────────────────────────────────────────────────────────────────────
+@import "tailwindcss";
+
+:root {
+  --ivory: #FBF7F2;
+  --cream: #F5EDF2;
+
+  --blush: #E0C0B8;
+  --dusty-rose: #CFA89A;
+
+  --light-brown: #A88471;
+  --dark-brown: #3D2E26;
+
+  --warm-gold: #C9A86A;
+  --light-green: #8FA68C;
+
+  --success: #6F8F6F;
+  --warning: #C99458;
+  --danger: #B5564A;
+
+  --border-total: #4a3428;
+  --border-confirmed: #4a3428;
+  --border-pending: #c9a063;
+  
+  --strokeY: #c7b7ad;
+  --strokeX:#9f8878;
+}
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/App.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from './assets/vite.svg'
+import heroImg from './assets/hero.png'
+import './App.css'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Login from './pages/Login'
+import { PrivateRoute } from './components/PrivateRoute'
+import Dashboard from './pages/Dashboard'
+import Reception from './pages/Reception'
+import Admin from './pages/Admin'
+
+function App() {
+
+  return (
+    <>
+     <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Login/>} />
+        <Route path='/dashboard' element={<PrivateRoute allowedRoles={["admin"]}> <Dashboard /></PrivateRoute> }/>
+        <Route path='/reception' element={<Reception />}/>
+        <Route path='/admin' element={<PrivateRoute allowedRoles={["admin"]}><Admin /></PrivateRoute>}></Route>
+      </Routes>
+     </BrowserRouter>
+    </>
+  )
+}
+
+export default App
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/index.css
+────────────────────────────────────────────────────────────────────────────────
+@import "tailwindcss"
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/src/main.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/eslint.config.js
+────────────────────────────────────────────────────────────────────────────────
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+])
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/ESTUDO-FRONT.md
+────────────────────────────────────────────────────────────────────────────────
+# 🎯 Guia pra decorar o front — Wedding Pass
+
+> Objetivo: reconstruir as telas **de memória** numa competição.
+> Foco em **estrutura (árvore de divs) + padrões recorrentes**, não em decorar cada `className`.
+> A sacada: você não decora 8 telas. Você decora ~5 "tijolos" e 1 "molde", e monta tudo com eles.
+
+---
+
+## 0. A ideia central (leia isso primeiro)
+
+Quase tudo no seu front é repetição de 5 padrões. Se você decorar **estes 5 tijolos** e o
+**molde de página**, você reconstrói qualquer tela:
+
+```
+TIJOLO 1 — CARD:    bg-ivory  rounded-2xl  shadow  p-6
+TIJOLO 2 — PÍLULA:  rounded-full  px-4 py-2  (botões e badges)
+TIJOLO 3 — INPUT:   w-full  border-b  py-..  outline-none  (linha, sem caixa)
+TIJOLO 4 — ROW:     flex  items-center  justify-between   (cabeçalho: algo à esq, algo à dir)
+TIJOLO 5 — STACK:   flex flex-col gap-..   /   grid grid-cols-1 md:grid-cols-3 gap-4
+```
+
+E o **molde de página interna** (Reception, Dashboard, Admin são todas iguais no topo):
+
+```
+<div p-4 min-h-screen bg-cream>      ← wrapper da página (também é o ref de impressão)
+   <Header />
+   <Hero />
+   ...conteúdo específico da página...
+</div>
+```
+
+Decora isso e você já tem 70% das 3 páginas principais.
+
+---
+
+## 1. O mapa (arquitetura) — `App.jsx`
+
+4 rotas:
+
+| Rota          | Tela        | Protegida?         |
+|---------------|-------------|--------------------|
+| `/`           | Login       | não                |
+| `/reception`  | Reception   | não                |
+| `/dashboard`  | Dashboard   | sim (admin)        |
+| `/admin`      | Admin       | sim (admin)        |
+
+Proteção = `<PrivateRoute allowedRoles={["admin"]}>...</PrivateRoute>` em volta da tela.
+
+**Componentes reaproveitados** (decora 1 vez, usa em todo lugar):
+- `Header` → barra do topo
+- `Hero` → painel marrom escuro com título + 3 `MiniCard`
+- `MiniCard` → cada cartãozinho de número
+- `GuestCard` → cartão de convidado (recebe botões via `children`)
+
+> **Hierarquia mental:** `Hero` **contém** 3x `MiniCard`. `Reception`/`Admin` fazem `.map` de `GuestCard`.
+
+---
+
+## 2. Paleta de cores — `App.css` (`:root`)
+
+Você não precisa decorar os hex. Decora os **apelidos** e o **papel** de cada um:
+
+| Variável         | Apelido mental      | Onde usa                                  |
+|------------------|---------------------|-------------------------------------------|
+| `--ivory`        | branco-creme        | fundo dos cards                           |
+| `--cream`        | fundo da página     | `bg-[var(--cream)]` no wrapper            |
+| `--dark-brown`   | marrom escuro       | Hero, texto forte, botão "Sair"           |
+| `--warm-gold`    | dourado             | detalhes, labels, bordas de input         |
+| `--warning`      | âmbar (CTA)         | botões de ação, destaques                 |
+| `--success`      | verde               | check-in feito                            |
+| `--danger`       | vermelho            | excluir / erro                            |
+
+> As 3 que mais aparecem: **ivory** (card), **dark-brown** (Hero/texto), **warm-gold** (detalhe).
+> Sintaxe no Tailwind v4 aqui aparece de 2 jeitos (ambos valem): `bg-[var(--ivory)]` e `bg-(--dark-brown)`.
+
+---
+
+## 3. Vocabulário Tailwind recorrente (os tijolos, detalhados)
+
+### 🧱 Card base
+```
+bg-[var(--ivory)]  rounded-2xl  shadow(-lg/-xl)  p-4|p-6
+```
+Tudo que é "caixa branca arredondada" usa isso. Hero é a versão escura (`bg-dark-brown`).
+
+### 🧱 Pílula (botão / badge)
+```
+rounded-full  px-4 py-2  cursor-pointer  transition  + cor de fundo
+```
+Badge de status = mesma pílula com `text-xs` e cor de estado.
+
+### 🧱 Input de linha (não tem caixa, só sublinhado)
+```
+w-full  bg-transparent|white/80  border-b border-[--warm-gold]  py-3|py-4  outline-none
+```
+Esse é o "look" do projeto inteiro: inputs são **linhas**, não retângulos.
+
+### 🧱 Row (cabeçalho: esquerda x direita)
+```
+flex  items-center  justify-between
+```
+Toda vez que tem "texto de um lado, botão do outro", é isso.
+
+### 🧱 Stack / Grid
+```
+empilhar:        flex flex-col gap-..
+3 colunas:       grid grid-cols-1 md:grid-cols-3 gap-4
+```
+
+### 📱 Regra responsiva do projeto
+Mobile empilha, desktop espalha:
+```
+flex-col   →   md:flex-row   (ou lg:flex-row)
+```
+Sempre que vir `md:` / `lg:` / `sm:`, é "no telão fica lado a lado".
+
+---
+
+## 4. Esqueletos de referência (do mais fácil ao mais difícil)
+
+> Notação: cada linha = um elemento. Indentação = aninhamento.
+> Mostro só a **classe-chave** do nível, não a className inteira.
+
+### 4.1 🟢 MiniCard  *(o que você não tinha pegado)*
+Só **1 caixa com 3 textos empilhados** e uma **borda colorida à esquerda**.
+```
+div  (CARD: bg-ivory p-6 rounded-sm shadow border-l-4)   ← a cor da borda vem por prop `border` (style inline)
+ ├─ p   título      (uppercase, dourado, pequeno)         → "TOTAL"
+ ├─ h2  valor       (text-4xl/5xl font-serif)             → 42
+ └─ p   descrição   (text-sm, dourado)                    → "Convidados Cadastrados"
+```
+Props: `title`, `value`, `border` (cor da borda esquerda), `description`.
+**Por que a borda é inline?** porque a cor muda por card → `style={{ borderColor: border }}`.
+
+### 4.2 🟢 Hero
+Painel **marrom escuro** = cabeçalho (texto + botão) em cima, **grid de 3 MiniCards** embaixo.
+```
+div  (bg-dark-brown rounded-2xl text-white p-6)
+ ├─ div  ROW (flex justify-between items-center mb-6)
+ │   ├─ div  (space-y-2)            ← bloco de texto à ESQUERDA
+ │   │   ├─ p   "Controle de recepção"
+ │   │   ├─ h1  "Painel <span>{title}</span>"   (text-5xl font-serif; span em âmbar)
+ │   │   └─ p   subtítulo (text-white/80)
+ │   └─ div  → button "Exportar relatório"   ← à DIREITA (onClick={funcao})
+ └─ div  GRID (grid-cols-1 md:grid-cols-3 gap-4)
+     ├─ MiniCard "Total"        value=total
+     ├─ MiniCard "Confirmados"  value=confirmed  border=verde
+     └─ MiniCard "Pendentes"    value=pending    border=âmbar
+```
+Props: `guests`, `funcao` (imprimir), `title`. Calcula dentro: `total / confirmed / pending`.
+
+### 4.3 🟡 GuestCard
+Card que recebe os **botões por fora** (`children`) — por isso serve pra Reception E Admin.
+```
+div  (CARD: bg-ivory border rounded-2xl p-4 shadow)
+ └─ div  ROW (flex flex-col xl:flex-row justify-between)   ← infos | {children}
+     ├─ div  (flex flex-col sm:flex-row gap-4)             ← avatar + infos
+     │   ├─ div  AVATAR (w-14 h-14 rounded-full)           ← círculo (vazio)
+     │   └─ div  (flex flex-col gap-3)                     ← bloco de infos
+     │       ├─ div  linha1: h2 nome  +  (MapPin + "Mesa N")
+     │       ├─ div  linha2: (Mail + email)  (Phone + phone)
+     │       └─ div  badge status: check-in? verde "Realizado" : âmbar "Pendente"
+     └─ {children}                                          ← botões que a PÁGINA injeta
+```
+Ícones: `lucide-react` (`Mail`, `MapPin`, `Phone`).
+**Sacada:** o GuestCard não sabe quais botões mostra. Reception passa "Check-in", Admin passa "Editar/Excluir".
+
+### 4.4 🟡 Reception  *(página)*
+Molde de página + busca + lista.
+```
+div  WRAPPER (p-4 min-h-screen bg-cream, ref={ref})
+ ├─ <Header />
+ ├─ <Hero title="Recepção" funcao={imprimir} guests={guests} />
+ ├─ input  busca (PÍLULA: w-full rounded-full p-4)   value=search
+ ├─ {loading && <p>Carregando...</p>}
+ └─ filtered.map(g =>
+       <GuestCard guest={g}>
+          <button> check-in </button>     ← children: verde se já feito, âmbar se pendente
+       </GuestCard>
+    )
+```
+Lógica: `filtered = guests.filter(nome inclui search)`. Botão chama `checkin(id)` → recarrega.
+
+### 4.5 🟡 Dashboard  *(página)*
+Molde de página + **um card com gráfico** (recharts).
+```
+div  WRAPPER (p-4 min-h-screen bg-cream, ref={ref})
+ ├─ <Header />
+ ├─ <Hero title="dashboard" guests funcao />
+ └─ div  CARD do gráfico (bg-ivory rounded-2xl shadow p-6 mt-10)
+     ├─ div  cabeçalho: "Visão Geral" + h2 "Distribuição RSVP"
+     ├─ span "Atualização automática"
+     └─ div  (h-64/h-80 w-full)            ← container de altura fixa pro gráfico
+         └─ ResponsiveContainer
+             └─ BarChart data={chartData}
+                 ├─ XAxis dataKey="name"
+                 ├─ YAxis
+                 ├─ Tooltip
+                 └─ Bar dataKey="value" → .map(Cell fill=cor)
+```
+`chartData` = 3 objetos `{name, value, fill}` (Total/Confirmados/Pendentes).
+Atualiza sozinho: `setInterval(load, 5000)` no `useEffect` (e `clearInterval` no cleanup).
+
+### 4.6 🔴 Admin  *(página — a mais cheia)*
+Molde de página + **linha dividida em 2**: formulário | lista.
+```
+div  WRAPPER (p-4 min-h-screen bg-cream)
+ ├─ <Header />
+ ├─ <Hero title="do Admin" guests funcao />
+ └─ div  SPLIT (flex flex-col md:flex-row justify-between gap-10)
+     ├─ div  FORM (CARD bg-white rounded-2xl shadow p-6, md:w-1/2)
+     │   ├─ h3 "NOVO CONVIDADO"  +  h2 "Cadastro"
+     │   ├─ {error && <p>}
+     │   ├─ input Nome          (INPUT de linha)
+     │   ├─ input E-mail
+     │   ├─ input CPF
+     │   ├─ input Telefone
+     │   ├─ input Número da mesa
+     │   └─ div (flex gap-5)
+     │       ├─ button  Cadastrar/Atualizar   (cor muda se editingId)
+     │       └─ {editingId && <button> Cancelar </button>}
+     └─ div  LISTA (ref={ref}, w-full)
+         └─ guests.map(g =>
+               <GuestCard guest={g}>
+                  <button> Editar </button>     ← dourado
+                  <button> Excluir </button>    ← vermelho
+               </GuestCard>
+            )
+```
+Estados-chave: `form` (objeto com 5 campos), `editingId` (null = cadastrar, id = editar).
+`save()` decide POST (criar) vs PUT (editar) pelo `editingId`.
+
+### 4.7 🔵 Login  *(revisão)*
+Tela centralizada com **card de 2 colunas: imagem | formulário**.
+```
+div  TELA (min-h-screen flex items-center justify-center)
+ └─ div  CARD (max-w-6xl grid grid-cols-1 lg:grid-cols-2 shadow-2xl)
+     ├─ div  imagem (hidden lg:block)         ← só aparece no desktop
+     │   └─ img  (object-cover w-full h-full)
+     └─ div  FORM (flex items-center justify-center)
+         └─ div (max-w-md)
+             ├─ p  "Acesso Restrito"
+             ├─ h1 "Wedding Pass" (text-6xl font-serif)
+             ├─ p  "Celebre cada momento"
+             ├─ div → label + input E-mail   (INPUT de linha)
+             ├─ div → label + input Senha
+             ├─ {error && <p>}
+             └─ button "Entrar" (PÍLULA w-full bg-warm-gold)
+```
+
+### 4.8 🔵 Header  *(revisão)*
+Barra: logo à esquerda, nav no meio, botão sair à direita.
+```
+div  BARRA (CARD: bg-ivory p-4 rounded-2xl shadow-xl)
+ └─ div  ROW (flex items-center justify-between)
+     ├─ div  logo (flex flex-col)            → p "Wedding Pass" + h1 "Recepção"
+     ├─ div  nav (flex space-x-6)
+     │   ├─ {role==="admin" && <Link>Dashboard</Link>}
+     │   ├─ <Link>Recepção</Link>
+     │   └─ {role==="admin" && <Link>Administração</Link>}
+     └─ button "Sair" (PÍLULA bg-dark-brown, LogOut icon)  → logout()
+```
+`logout()` = `localStorage.clear()` + redireciona pra `/`.
+
+---
+
+## 5. Método de memorização (como treinar)
+
+Para **cada tela**, estude em **3 camadas** (não tente tudo de uma vez):
+
+1. **Camada ESTRUTURA** — desenhe só a árvore de divs em branco (sem classes). Só o esqueleto.
+2. **Camada LAYOUT** — preencha a classe de arranjo de cada nível: é `flex`? `flex-col`? `grid`? `justify-between`?
+3. **Camada DETALHE** — preencha cores, tamanhos de texto, arredondamento.
+
+**Ordem de estudo (do tijolo → ao prédio):**
+```
+MiniCard  →  Hero  →  GuestCard  →  Reception  →  Dashboard  →  Admin  →  (revisar Login + Header)
+```
+Por quê: Hero precisa do MiniCard; as páginas precisam do Hero e do GuestCard. Construa de baixo pra cima.
+
+**Repetição espaçada (a semana):**
+- Dia 1: tijolos (seção 3) + MiniCard + Hero.
+- Dia 2: revisa dia 1 de memória + GuestCard + Reception.
+- Dia 3: revisa + Dashboard + Admin.
+- Dia 4+: só drills (seção 6) cronometrados, focando no Admin.
+
+---
+
+## 6. Drills em branco (pratique de memória, depois confira na seção 4)
+
+### Drill A — MiniCard
+> Escreva o MiniCard do zero. **Checklist:** 1 div? `border-l-4`? borda por `style` inline? 3 textos (título/valor/descrição)?
+
+### Drill B — Hero
+> Reconstrua o Hero. **Checklist:** fundo marrom? row `justify-between` (texto | botão)? grid `md:grid-cols-3` com 3 MiniCards? span do título em âmbar?
+
+### Drill C — GuestCard (esqueleto furado — complete os `___`)
+```
+div  (___ rounded-2xl p-4 shadow)
+ └─ div  (flex ___ xl:flex-row justify-between)
+     ├─ div  (flex flex-col sm:flex-row gap-4)
+     │   ├─ div  AVATAR (w-14 h-14 ___)
+     │   └─ div  (flex flex-col gap-3)
+     │       ├─ div  nome + (___ icon "Mesa N")
+     │       ├─ div  (Mail email) (Phone phone)
+     │       └─ div  badge: checked_in ? ___ : ___
+     └─ ___          ← o que entra aqui? (dica: vem da página)
+```
+
+### Drill D — Molde de página (de cabeça)
+> Escreva o topo comum de Reception/Dashboard/Admin sem olhar. (3 elementos no wrapper.)
+
+### Drill E — Admin (esqueleto furado)
+```
+div  WRAPPER (p-4 min-h-screen bg-cream)
+ ├─ <___ />
+ ├─ <___ />
+ └─ div  (flex flex-col ___ justify-between gap-10)
+     ├─ div  FORM (___ md:w-1/2)
+     │   ├─ ... quantos inputs? ___
+     │   └─ button: texto muda conforme qual estado? ___
+     └─ div  LISTA
+         └─ guests.map → <GuestCard> com 2 botões: ___ e ___
+```
+
+### Drill F — Dashboard
+> Reconstrua o card do gráfico. **Checklist:** container com altura fixa (`h-80`)? `ResponsiveContainer > BarChart`? `XAxis`/`YAxis`/`Tooltip`/`Bar`? `Bar` faz `.map` de `Cell`?
+
+---
+
+## 7. Resumo de 1 minuto (pra reler antes da prova)
+
+- **5 tijolos:** Card · Pílula · Input-linha · Row(`justify-between`) · Stack/Grid.
+- **Molde de página:** `wrapper bg-cream` → `Header` → `Hero` → conteúdo.
+- **Hero** = caixa marrom (row texto|botão) + grid de **3 MiniCards**.
+- **MiniCard** = 1 caixa, 3 textos, `border-l-4` colorida (cor por prop).
+- **GuestCard** = avatar + infos + badge, e os **botões vêm via `children`** (Reception=check-in, Admin=editar/excluir).
+- **Reception** = busca + `.map` de GuestCard. **Admin** = form (5 inputs) | lista. **Dashboard** = card com BarChart (recharts).
+- **Responsivo:** `flex-col` no celular → `md:flex-row` no telão.
+```
+```
+
+> Você já tem as telas na cabeça. Esse guia é só pra transformar "imagem mental" em "árvore de divs" rápido. Boa competição! 🏆
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/index.html
+────────────────────────────────────────────────────────────────────────────────
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/package.json
+────────────────────────────────────────────────────────────────────────────────
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "lucide-react": "^1.20.0",
+    "node-fetch": "^3.3.2",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.17.0",
+    "react-to-print": "^3.3.0",
+    "recharts": "^3.8.1",
+    "tailwindcss": "^4.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "vite": "^8.0.12"
+  }
+}
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/README.md
+────────────────────────────────────────────────────────────────────────────────
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend/vite.config.js
+────────────────────────────────────────────────────────────────────────────────
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/components/GuestCard.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { Mail, MapPin, Phone, User } from 'lucide-react'
+import React from 'react'
+
+function GuestCard({ guest, children }) {
+    const initials = guest.name?.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    return (
+        <div className=' bg-[#f7f3ef] border border-[#eaded6] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition mb-4'>
+            <div className='flex flex-col xl:flex-row xl:items-center justify-between gap-5'>
+                <div className='flex flex-col sm:flex-row sm:items-start gap-4 w-full min-w-0'>
+
+                    <div className='min-w-14 w-14 h-14 rounded-full bg-[#e7d4c7] flex items-center justify-center  text-[#6a4b3c] font-serif text-lg shadow-inner'>
+                        {initials}
+                    </div>
+                    <div className='flex flex-col gap-3 w-full min-w-0'>
+                        <div className='flex flex-col lg:flex-row lg:items-center lg:gap-4 gap-2 lg:just'>
+
+                            <h2 className='text-lg font-semibold text-[#4a3428] wrap-break-word'>{guest.name}</h2>
+                            <div className='flex items-center gap-1  text-[#9b7d6d]'>
+
+                                <MapPin size={14}></MapPin>
+                                <p>Mesa {guest.table_number}</p>
+
+                            </div>
+                        </div>
+
+                        <div className='flex  items-center space-x-2'>
+                            <Mail size={14}></Mail>
+                            <p>{guest.email}</p>
+
+                            <Phone size={14}></Phone>
+                            <p>{guest.phone}</p>
+                        </div>
+                        <div>
+                            {guest.checked_in ? (
+                                <span className='inline-flex items-center gap-2 bg-[#dce8da] text-[#567253] text-xs py-1 px-3 rounded-full '>
+                                    ✓ Check-in realizado
+                                </span>
+                            ) : (
+                                <span className='inline-flex items-center gap-2 bg-[#F5EDE2] text-[#C99458] text-sm py-1 px-3 rounded-full'>Pendente</span>
+                            )}
+
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    
+                </div>
+                {children}
+            </div>
+
+        </div>
+    )
+}
+
+export default GuestCard
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/components/Header.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { LogOut } from 'lucide-react'
+import React from 'react'
+import { Link } from 'react-router-dom'
+
+function Header({ page }) {
+    const role = localStorage.getItem('role')
+
+    function logout() {
+        localStorage.clear()
+        window.location.href = "/"
+    }
+    return (
+        <div className='w-full bg-[#FBF7F2] p-4 rounded-2xl shadow-xl'>
+            <div className='flex items-center justify-between sm:flex flex-wrap'>
+                <div className='flex flex-col '>
+                    <p className='text-sx text-[#C9A86A] font-mono'>Wedding Pass</p>
+                    <h1 className='text-3xl font-serif font-light'>Recepção</h1>
+                </div>
+                <div className='flex space-x-6 items-center'>
+                    {role === "admin" && (
+                        <Link to="/dashboard">Dashboard</Link>
+                    )}
+                    <Link to="/reception" >Recepção</Link>
+
+                    {role === "admin" && (
+                        <Link to="/admin">Admin</Link>
+                    )}
+
+
+                    <button className='flex items-center justify-center text-xs bg-[#3D2E26] rounded-full text-white px-4 py-2 gap-2 cursor-pointer' onClick={() => logout()}>   <LogOut size={18} />
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Header
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/components/Hero.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useEffect, useRef, useState } from 'react'
+import MiniCard from './MiniCard'
+
+function Hero({ guests, funcao, title }) {
+
+    const total = guests.length
+    const confirmed = guests.filter(g => g.checked_in).length
+    const pending = total - confirmed
+
+    return (
+        <div className='bg-[#3D2E26] relative rounded-2xl overflow-visible shadow-xl text-white mb-52 md:mb-40 lg:mb-32 pb-32 md:pb-24 mt-10'>
+            <div className='flex justify-between items-center '>
+
+                <div className='p-4 space-y-2'>
+                    <p className='text-lg text-[#C9A86A]'>Reception control</p>
+                    <h1 className='text-5xl font-serif text-white'>Painel de <span className='text-[#C9A86A] font-serif'>{title}</span></h1>
+                    <p className='text-lg text-white/80'>Gerencie check-ins, acompanhe confirmações e organize a recepção em tempo real</p>
+                </div>
+                <div className='flex gap-4 items-center p-4 mt-4'>
+                    <button onClick={funcao} className='text-white text-lg border border-[#C9A86A] rounded-full p-4 cursor-pointer'>Exportar Lista</button>
+                </div>
+            </div>
+
+            <div className="absolute left-1/2 -bottom-80 md:-bottom-24 lg:-bottom-20 -translate-x-1/2 w-[95%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-2 sm:px-4">
+
+                <MiniCard
+                    title="Total"
+                    value={total}
+                    description="Convidados cadastrados"
+                />
+
+                <MiniCard
+                    title="Confirmados"
+                    value={confirmed}
+                    border="#6F8F6F"
+                    description="RSVP confirmado"
+                />
+
+                <MiniCard
+                    title="Pendentes"
+                    value={pending}
+                    border="#C9A86A"
+                    description="Aguardando resposta"
+                />
+            </div>
+        </div>
+    )
+}
+
+export default Hero
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/components/MiniCard.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+
+function MiniCard({ title, value, border, description}) {
+  return (
+    <div className='bg-[#f7f3ef] text-[#3d2a21] p-5 sm:p-6 rounded-sm shadow-lg border-l-4' style={{
+      borderColor: border,
+    }}>
+
+      <p className='uppercase tracking-[3px] text-xs text-[#8a7465] mb-3'>
+        {title}
+      </p>
+
+      <h2 className='text-4xl md:text-5xl font-serif wrap-break-word mb-2'>
+        {value}
+      </h2>
+      <p className='text-sm text-[#8a7465] '>{description}</p>
+    </div>
+  )
+}
+
+export default MiniCard
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/components/PrivateRoutes.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React from 'react'
+import {Navigate} from 'react-router-dom'
+
+function PrivateRoutes({children, allowedRoles}) {
+  const token = localStorage.getItem('token')
+  const role = localStorage.getItem('role')
+
+  if(!token) {
+    alert(token)
+    return <Navigate to="/" />
+  }
+
+  if(allowedRoles && !allowedRoles.includes(role))  {
+    return <Navigate to="/reception" />
+  }
+
+  return children
+}
+
+export default PrivateRoutes
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/pages/Admin.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useEffect, useRef, useState } from 'react'
+import GuestCard from '../components/GuestCard'
+import Header from '../components/Header'
+import Hero from '../components/Hero'
+
+function Admin() {
+    const [guests, setGuests] = useState([])
+    const [editingId, setEditingId] = useState(null)
+    const [error, setError] = useState(null)
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        table_number: ""
+    })
+
+    const ref = useRef()
+    const handlePrint = useReactToPrint({
+        contentRef: ref
+    })
+
+
+    async function load() {
+        try {
+            const res = await fetch("http://localhost:3000/guest/list", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            const data = await res.json()
+            setGuests(data)
+        } catch (err) {
+            console.log("Erro ao listar convidados", err)
+        }
+    }
+
+    async function save(id) {
+        try {
+
+            if (!form.name || !form.email) {
+                throw new Error('Nome e Email são obrigatorios')
+            }
+
+            if (editingId) {
+                const res = await fetch(`http://localhost:3000/guest/update/${id}`, {
+                    method: "PUT",
+                    body: JSON.stringify(form),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+
+                })
+                if (!res.ok) throw new Error('Erro ao editar convidado')
+            } else {
+                const res = await fetch(`http://localhost:3000/guest/register`, {
+                    method: "POST",
+                    body: JSON.stringify(form),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
+                if (!res.ok) throw new Error('Erro ao criar convidado')
+            }
+
+            resetForm()
+            load()
+        } catch (err) {
+            setError(err)
+            throw new Error('Erro ao salvar convidado', err)
+        }
+    }
+
+
+    function edit(g) {
+        setEditingId(g.id)
+        setForm({
+            name: g.name || "",
+            email: g.email || "",
+            phone: g.phone || "",
+            table_number: g.table_number || ""
+        })
+    }
+    function resetForm() {
+        setEditingId(null)
+        setForm({
+            name: "",
+            email: "",
+            phone: "",
+            table_number: ""
+        })
+    }
+
+    async function remove(id) {
+        if (!confirm('Deseja mesmo excluir? ')) return
+        const data = await fetch(`http://localhost:3000/guest/delete/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        load()
+    }
+
+    useEffect(() => { load() }, [])
+    return (
+        <div className='min-h-screen bg-[#F5EDE2] p-4'>
+
+            <Header page="Painel administrativo" />
+            <Hero guests={guests} funcao={handlePrint} title="Administração" />
+            <div className='flex flex-col justify-between gap-10 mt-35 md:flex-row'>
+                <div className='gap-2 mt-5  bg-white rounded-2xl shadow p-6 md:w-1/2 '>
+
+                    <h3 className='text-xs text-[#C9A86A] tracking-widest '>NOVO CONVIDADO</h3>
+                    <h2 className='text-4xl font-serif mb-10'>Cadastro</h2>
+                    {error && (<p className='text-sm text-rose-500 text-center'>{error.message}</p>)}
+
+                    <input type="text" placeholder='Nome Completo' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        className='w-full text-[#4a3428]  bg-white/80 cursor-pointer mb-10 border-b border-b-[#C9A86A]  py-4' />
+
+                    <input type="email" placeholder='E-mail' value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className='w-full text-[#4a3428]  bg-white/80 cursor-pointer mb-10 border-b border-b-[#C9A86A]  py-4' />
+
+
+                    <input type="text" placeholder='Telefone' value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        className='w-full text-[#4a3428]  bg-white/80 cursor-pointer mb-10 border-b border-b-[#C9A86A]  py-4' />
+
+                    <input type="text" placeholder='Número da mesa' value={form.table_number} onChange={(e) => setForm({ ...form, table_number: Number(e.target.value) })}
+                        className='w-full  text-[#4a3428] bg-white/80 cursor-pointer  mb-10 border-b border-b-[#C9A86A]  py-4' />
+                    <div className='flex gap-5'>
+
+                        <button onClick={() => save(editingId)} className={` w-full cursor-pointer rounded-full mt-2 shadow p-4 font-semibold  ${editingId ? "bg-[#C99458] hover:bg-[#da9648] text-[#3D2E26] transition" : "bg-[#3D2E26] text-white  hover:bg-[#574236] transition"} cursor-pointer`}>
+                            {editingId ? "Atualizar" : "Cadastrar"}
+                        </button>
+
+                        {editingId && (
+                            <button onClick={resetForm} className='w-full rounded-full shadow bg-white hover:bg-white/70 p-4 mt-2 cursor-pointer border border-[#da9648]  text-[#3D2E26] font-semibold'>Cancelar</button>
+                        )}
+                    </div>
+
+                </div>
+
+                <div ref={ref} className='flex flex-col gap-2 mt-4 w-full'>
+
+                    <div className=''>
+                        {guests.map(g => (
+                            <GuestCard key={g.id} guest={g}>
+                                <button onClick={() => edit(g)}
+                                    className='bg-[#C99458] hover:bg-[#da9648] rounded-full cursor-pointer shadow px-5 py-2 mb-2 mt-2 font-semibold text-[#3D2E26] transition'>
+                                    Editar
+                                </button>
+
+                                <button className='bg-[#810c0c] hover:bg-rose-500 cursor-pointer rounded-full shadow  px-5 py-2 text-white font-semibold' onClick={() => remove(g.id)}>Excluir</button>
+                            </GuestCard>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    )
+}
+
+export default Admin
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/pages/Dashboard.jsx
+────────────────────────────────────────────────────────────────────────────────
+
+import React, { useEffect, useRef, useState } from 'react'
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import Header from '../components/Header'
+import MiniCard from '../components/MiniCard'
+import Hero from '../components/Hero'
+import { useReactToPrint } from 'react-to-print'
+
+function Dashboard() {
+  const [guests, setGuests] = useState([])
+  const [loading, setLoading] = useState(null)
+
+  const ref = useRef()
+  const handlePrint = useReactToPrint({
+    contentRef: ref
+  })
+  async function load() {
+    try {
+      setLoading(true)
+      const data = await fetch('http://localhost:3000/guest/list', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+
+      })
+      const res = await data.json()
+      setGuests(res)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  if (!guests) {
+    return (
+      <div>
+        Carregando dashboard...
+      </div>
+    )
+  }
+
+  const total = guests.length
+  const confirmed = guests.filter(g => g.checked_in).length
+  const pending = total - confirmed
+
+  const chartData = [
+    { name: "Total", value: total, fill: "var(--border-total)" },
+    { name: "Confirmados", value: confirmed, fill: "var(--border-confirmed)" },
+    { name: "Pendentes", value: pending, fill: "var(--border-pending)" }
+  ]
+
+  return (
+    <div ref={ref} className='min-h-screen bg-[#F5EDE2] p-4'>
+
+      <Header page="Dashboard" />
+
+      <Hero guests={guests} funcao={handlePrint} title="Dashboard" />
+
+      <div className='mt-10 md:mt-35 bg-[#f7f3ef] rounded-2xl shadow-sm p-4 md:p-6'>
+
+        <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8'>
+
+          <div>
+            <p className='uppercase tracking-[3px] text-xs text-[#b59683] mb-2'>
+              Visão geral
+            </p>
+
+            <h2 className='text-2xl md:text-3xl font-serif text-[#4a3428]'>
+              Distribuição RSVP
+            </h2>
+          </div>
+
+          <span className='text-xs tracking-[3px] uppercase text-[#9f8878]'>
+            Atualização automática
+          </span>
+        </div>
+
+        <div className='h-64 sm:h-72 md:h-80 w-full '>
+
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+
+              <XAxis
+                dataKey="name"
+                stroke="var(--storkeX)"
+              />
+
+              <YAxis
+                stroke="var(--strokeY)"
+              />
+
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fffaf7",
+                  border: "1px solid #eaded6",
+                  borderRadius: "12px"
+                }}
+              />
+
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {chartData.map((entry, index) => (
+                  <Cell key={index} fill={entry.fill} />
+                ))}
+              </Bar>
+
+            </BarChart>
+          </ResponsiveContainer>
+
+        </div>
+      </div>
+
+    </div>
+  )
+}
+
+export default Dashboard
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/pages/Login copy.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useState } from 'react'
+
+function Login() {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState(null)
+
+    async function handleLogin() {
+        try  {
+            const response = await fetch('http://localhost:3000/user/login', {
+                method: "POST",
+                body: JSON.stringify({email, password}),
+                headers: {'Content-Type': 'application/json'}
+            })
+            const data = await response.json()
+
+            localStorage.setItem('token', data.token)
+            localStorage.setItem('role', data.user.role)
+
+            if(data.user.role === "admin") {
+                window.location.href = "/dashboard"
+            } else {
+                window;location.href = "/reception"
+            }
+
+        } catch(e) {
+            setError('erro ao fazer login', e)            
+        }
+    }
+
+
+  return (
+    <div className='min-h-screen bg-amber-100 p-4'>
+        <div className='flex flex-col items-center justify-center mt-30'>
+           <div className='text-center w-80 shadow bg-white/80 rounded-2xl p-4 space-y-2'>
+             <h1>
+                Wedding Pass 
+            </h1>
+            <p className='text-xs mb-4'>Acesso Administração</p>
+            
+            {error && (
+                <p className='text-rose-500 text-xs mb-4 font-semibold'>Erro ao fazer login</p>
+            )}
+            <input  placeholder='E-mail'
+            onChange={(e) => setEmail(e.target.value)}
+            className='bg-gray-200 border border-gray-700 rounded p-2 shadow w-full' />
+
+            <input type='password' placeholder='Senha'
+            onChange={(e) => setPassword(e.target.value)}
+            className='bg-gray-200 border border-gray-700 rounded p-2 shadow w-full' />
+
+            <button onClick={handleLogin} className='w-full bg-rose-200 cursor-pointer p-2 rounded-2xl border border-rose-500'>Entrar</button>
+           </div>
+        </div>
+    </div>
+  )
+}
+
+export default Login
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/pages/Login.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useState } from 'react'
+
+function Login() {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState(null)
+
+    async function handleLogin() {
+        try {
+            const response = await fetch('http://localhost:3000/user/login', {
+                method: "POST",
+                body: JSON.stringify({ email, password }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            const data = await response.json()
+
+            localStorage.setItem('token', data.token)
+            localStorage.setItem('role', data.user.role)
+
+            if (data.user.role === "admin") {
+                window.location.href = "/dashboard"
+            } else {
+                window; location.href = "/reception"
+            }
+
+        } catch (e) {
+            setError('erro ao fazer login', e)
+        }
+    }
+
+
+    return (
+        <div className="min-h-screen bg-[#c9a48d] flex items-center justify-center p-6">
+      
+      {/* CARD PRINCIPAL */}
+      <div className="w-full max-w-6xl bg-[#f5ebe4] rounded-sm overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-2">
+        
+        {/* IMAGEM */}
+        <div className="relative hidden lg:block">
+          
+          <img
+            src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop"
+            alt="Wedding"
+            className="w-full h-full object-cover"
+          />
+
+          {/* overlay */}
+          <div className="absolute inset-0 bg-[#c79d84]/30"></div>
+
+          {/* detalhes decorativos */}
+          <div className="absolute inset-0 border border-white/30 m-8 rounded-full"></div>
+
+          <div className="absolute top-10 left-10 w-32 h-32 border border-white/40 rounded-full"></div>
+
+          <div className="absolute bottom-10 right-10 w-40 h-40 border border-white/40 rounded-full"></div>
+        </div>
+
+        {/* LOGIN */}
+        <div className="flex items-center justify-center px-8 py-16 bg-[#f5ebe4]">
+          
+          <div className="w-full max-w-md">
+            
+            <p className="text-[#c9a48d] uppercase tracking-[4px] text-sm mb-3">
+              Acesso restrito
+            </p>
+
+            <h1 className="text-6xl font-serif text-[#5a463b] mb-2">
+              Wedding Pass
+            </h1>
+
+            <p className="text-[#9b7d6d] mb-10">
+              Celebre cada momento
+            </p>
+              
+              {/* EMAIL */}
+              <div>
+                <label className="block text-xs uppercase tracking-[3px] text-[#b1907d] mb-2">
+                  E-mail
+                </label>
+
+                <input
+                  type="email"
+                  placeholder="noiva@weddingpass.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="
+                    w-full
+                    border-b
+                    border-[#d8c4b8]
+                    bg-transparent
+                    py-3
+                    outline-none
+                    text-[#5a463b]
+                    placeholder:text-[#bca79a]
+                    focus:border-[#c8a15d]
+                    transition
+                  "
+                />
+              </div>
+
+              {/* SENHA */}
+              <div>
+                <label className="block text-xs uppercase tracking-[3px] text-[#b1907d] mb-2">
+                  Senha
+                </label>
+
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="
+                    w-full
+                    border-b
+                    border-[#d8c4b8]
+                
+                    bg-transparent
+                    py-3
+                    outline-none
+                    text-[#5a463b]
+                    placeholder:text-[#bca79a]
+                    focus:border-[#c8a15d]
+                    transition
+                  "
+                />
+              </div>
+
+              {/* ERRO */}
+              {error && (
+                <p className="text-red-500 text-sm">
+                  {error}
+                </p>
+              )}
+
+              {/* BOTÃO */}
+              <button
+                onClick={handleLogin}
+                className="
+                  cursor-pointer
+                  w-full
+                  bg-[#c8a15d]
+                  hover:bg-[#b88f4c]
+                  transition
+                  text-white
+                  py-4
+                  rounded-full
+                  tracking-[2px]
+                  uppercase
+                  font-semibold
+                  mt-6
+                "
+              >
+                Entrar no painel
+              </button>
+
+              {/* DIVISOR */}
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1 h-px bg-[#dbc9bf]"></div>
+
+                <span className="text-[#b89b8a] text-sm uppercase">
+                  ou
+                </span>
+
+                <div className="flex-1 h-px bg-[#dbc9bf]"></div>
+              </div>
+
+              {/* BOTÃO SECUNDÁRIO */}
+              <button
+                type="button"
+                onClick={() => (window.location.href = "/register")}
+                className="
+                  w-full
+                  border
+                  border-[#d7c2b5]
+                  text-[#8f7466]
+                  py-4
+                  rounded-full
+                  uppercase
+                  tracking-[2px]
+                  hover:bg-[#efe2d9]
+                  transition
+                "
+              >
+                Criar novo usuário
+              </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    )
+}
+
+export default Login
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/pages/Reception.jsx
+────────────────────────────────────────────────────────────────────────────────
+import React, { useEffect, useRef, useState } from 'react'
+import GuestCard from '../components/GuestCard'
+import Header from '../components/Header'
+import Hero from '../components/Hero'
+import { Search } from 'lucide-react'
+import { useReactToPrint } from 'react-to-print'
+
+function Reception() {
+    const [guests, setGuests] = useState([])
+    const [search, setSearch] = useState('')
+    const [loading, setLoading] = useState(null)
+
+    const ref = useRef()
+    const handlePrint = useReactToPrint({
+        contentRef: ref
+    })
+
+    async function load() {
+        try {
+            setLoading(true)
+            const data = await fetch('http://localhost:3000/guest/list', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+
+            })
+            const res = await data.json()
+            setGuests(res)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => { load() }, [])
+
+    const filtered = guests.filter(g => g.name.toLowerCase().includes(search.toLowerCase()))
+
+    async function checkin(id) {
+        try {
+            const res = await fetch(`http://localhost:3000/guest/checkin/${id}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            const data = await res.json()
+            load()
+        } catch {
+            alert('Checkin já realizado')
+        }
+    }
+
+    const total = guests.length
+    const confirmed = guests.filter(g => g.checked_in).length
+    const pending = total - confirmed
+
+
+    return (
+        <div ref={ref} className='bg-[#F5EDE2] min-h-screen p-4 '>
+            <Header page={"Recepção"} />
+            <Hero guests={guests} funcao={handlePrint} title="Convidados" />
+
+            <input placeholder='Buscar Convidados' className='w-full bg-white/80 rounded-2xl  p-4 mt-30 mb-4 shadow-lg' value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className='flex flex-col justify-between text-center '>
+
+            </div>
+
+            {loading && (<p>Carregando dashboard...</p>)}
+
+            {filtered.map((g) => (
+                <GuestCard key={g.id} guest={g}
+                ref={ref}
+                ><button disabled={g.checked_in}
+                    onClick={() => checkin(g.id)}
+                    className={`${g.checked_in ?  "bg-[#7f9b7c] text-white cursor-default"
+                      : "bg-[#d4b06d] hover:opacity-90 text-[#3d2a21]"} p-2 rounded-2xl mt-2 cursor-pointer`}><p className='font-semibold'>{g.checked_in ? "Checkin Realizado" : "Realizar Checkin"}</p>
+                    </button>
+                </GuestCard>
+            ))}
+        </div>
+    )
+}
+
+export default Reception
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/App.css
+────────────────────────────────────────────────────────────────────────────────
+@import "tailwindcss";
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/App.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { useState } from 'react'
+import './App.css'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Login from './pages/Login'
+import Reception from './pages/Reception'
+import PrivateRoutes from './components/PrivateRoutes'
+import Admin from './pages/Admin'
+import Dashboard from './pages/Dashboard'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Login />} />
+        <Route path='/reception' element={<Reception />}/>
+        <Route path='/admin' element={<PrivateRoutes allowedRoles={["admin"]}><Admin /></PrivateRoutes>} />
+        <Route path='/dashboard' element={<PrivateRoutes allowedRoles={["admin"]}><Dashboard /></PrivateRoutes>} />
+
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/index.css
+────────────────────────────────────────────────────────────────────────────────
+@import "tailwindcss";
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/src/main.jsx
+────────────────────────────────────────────────────────────────────────────────
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/eslint.config.js
+────────────────────────────────────────────────────────────────────────────────
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+])
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/index.html
+────────────────────────────────────────────────────────────────────────────────
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/package.json
+────────────────────────────────────────────────────────────────────────────────
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "lucide-react": "^1.14.0",
+    "node-fetch": "^3.3.2",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.0",
+    "react-to-print": "^3.3.0",
+    "recharts": "^3.8.1",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "vite": "^8.0.12"
+  }
+}
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/README.md
+────────────────────────────────────────────────────────────────────────────────
+# Pré requisitos
+## node v18+
+## banco mysql rodando no pc
+
+# Instalação do front
+*Para conseguir rodar o projeto, siga os seguintes passos:*
+- Entrar na pasta do frontend. No terminal: cd frontend
+- Instalar as dependências. No terminal (ainda dentro da pasta): npm install
+- Rodar o projeto. No terminal (na mesma pasta): npm run dev
+- Após isso, acesse localhost:5173 no navegador.
+
+## O senac wedding trata-se de um sistema de checkin de convidados para um casamento. Contendo cargos diferentes de usuário (administrador e recepcionista), que contém diversas funções para cada
+- Admin: Pode cadastrar, visualizar/buscar convidados por nome (em tempo real), fazer checkin, deletar e editar convidados.
+- Recepcionista: Pode apenas visualizar/buscar convidados por nome (em tempo real) e realizar checkin.
+
+## Telas permitidas para o administrador
+- Dashboard (Ver dados reais com base no banco de dados, como total de convidados, total de convidados confirmados (com checkin realizado) e os convidados pendentes(os que nao fizeram checkin). Todos esses dados vem do backend via integração com fetch).
+- Admin (criar, atualizar, ou deletar convidados, tendo tambem o numero total, de confirmados e os pendentes).
+- Recepção (Visualizar e buscar convidados por nome, ou realizar o checkin).
+
+## Telas permitidas para o recepcionista
+- Recepção (Visualizar e buscar convidados por nome, ou realizar o checkin).
+
+## Tecnologias utilizadas
+### frontend: Reaxt.js, tailwindCSS
+### backend: Typescript, node.js, typeORM
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  frontend copy/vite.config.js
+────────────────────────────────────────────────────────────────────────────────
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+
+
+────────────────────────────────────────────────────────────────────────────────
+📄  script.js
+────────────────────────────────────────────────────────────────────────────────
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+
+// Extensões que valem a pena ler
+const READABLE_EXTS = new Set([
+  ".js", ".mjs", ".cjs",
+  ".ts", ".tsx", ".jsx",
+  ".json", ".jsonc",
+  ".env", ".env.example", ".env.local",
+  ".sql",
+  ".html", ".css", ".scss",
+  ".md", ".mdx", ".txt",
+  ".yaml", ".yml",
+  ".toml", ".ini", ".cfg",
+  ".sh", ".bash",
+  ".prisma",
+  ".graphql", ".gql",
+  ".xml",
+  ".http", ".rest",
+]);
+
+// Pastas para ignorar completamente
+const IGNORE_DIRS = new Set([
+  "node_modules", ".git", "dist", "build", ".next",
+  "out", "coverage", ".cache", ".turbo", "tmp", "temp",
+  ".vite", ".parcel-cache", "__pycache__", ".pytest_cache",
+]);
+
+// Arquivos para ignorar
+const IGNORE_FILES = new Set([
+  ".DS_Store", "Thumbs.db", "package-lock.json", "yarn.lock", "pnpm-lock.yaml",
+]);
+
+const rootDir = process.argv[2] || process.cwd();
+const outputFile = path.join(process.cwd(), "project-dump.txt");
+
+const lines = [];
+
+function header(text) {
+  const bar = "═".repeat(80);
+  lines.push(`\n╔${bar}╗`);
+  lines.push(`║  ${text.padEnd(78)}║`);
+  lines.push(`╚${bar}╝`);
+}
+
+function subheader(filePath) {
+  const rel = path.relative(rootDir, filePath);
+  lines.push(`\n${"─".repeat(80)}`);
+  lines.push(`📄  ${rel}`);
+  lines.push("─".repeat(80));
+}
+
+function walkTree(dir, depth = 0) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    if (IGNORE_FILES.has(entry.name)) continue;
+
+    const fullPath = path.join(dir, entry.name);
+    const indent = "  ".repeat(depth);
+
+    if (entry.isDirectory()) {
+      if (IGNORE_DIRS.has(entry.name)) {
+        lines.push(`${indent}📁 ${entry.name}/  [ignorado]`);
+        continue;
+      }
+      lines.push(`${indent}📁 ${entry.name}/`);
+      walkTree(fullPath, depth + 1);
+    } else {
+      const ext = path.extname(entry.name).toLowerCase();
+      const readable = READABLE_EXTS.has(ext);
+      lines.push(`${indent}${readable ? "📄" : "⛔"} ${entry.name}`);
+    }
+  }
+}
+
+function walkContent(dir) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  entries.sort((a, b) => {
+    if (a.isDirectory() && !b.isDirectory()) return -1;
+    if (!a.isDirectory() && b.isDirectory()) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  for (const entry of entries) {
+    if (IGNORE_FILES.has(entry.name)) continue;
+
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      if (!IGNORE_DIRS.has(entry.name)) walkContent(fullPath);
+      continue;
+    }
+
+    const ext = path.extname(entry.name).toLowerCase();
+    if (!READABLE_EXTS.has(ext)) continue;
+
+    subheader(fullPath);
+
+    try {
+      const content = fs.readFileSync(fullPath, "utf-8");
+      if (content.trim() === "") {
+        lines.push("[arquivo vazio]");
+      } else {
+        lines.push(content);
+      }
+    } catch {
+      lines.push("[erro ao ler o arquivo]");
+    }
+  }
+}
+
+// === MAIN ===
+header(`PROJECT DUMP — ${rootDir}`);
+header("ESTRUTURA DE ARQUIVOS");
+walkTree(rootDir);
+
+header("CONTEÚDO DOS ARQUIVOS");
+walkContent(rootDir);
+
+const output = lines.join("\n");
+fs.writeFileSync(outputFile, output, "utf-8");
+
+const lineCount = output.split("\n").length;
+const sizeKb = (Buffer.byteLength(output, "utf-8") / 1024).toFixed(1);
+console.log(`✅ Dump gerado: project-dump.txt`);
+console.log(`   ${lineCount} linhas — ${sizeKb} KB`);
+console.log(`   Caminho: ${outputFile}`);

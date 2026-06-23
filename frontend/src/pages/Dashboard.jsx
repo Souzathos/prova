@@ -33,11 +33,10 @@ function Dashboard() {
 
     useEffect(() => {
         load()
-        const interval = setInterval(load, 5000)
-        return () => clearInterval(interval)
+        
     }, [])
 
-    if(!guests) {
+    if(loading) {
         return (
             <div>
                 Carregando dashboard...
@@ -59,48 +58,30 @@ function Dashboard() {
         <Header page="Dashboard"/>
         <Hero guests={guests} title="dashboard" funcao={handlePrint} />
 
-    <div className=' bg-[var(--ivory)] rounded-2xl shadow-lg p-6 mt-10 md:mt-10 '>
-        <div className=''>
-            <div className='flex sm:flex-row sm:justify-between sm:items-center gap-4 mb-8'>
-                <div className='flex flex-col'>
-                    <p className='uppercase text-xs text-[var(--warning)] mb-2'> Visão Geral</p>
-                    <h2 className='text-2xl mb:text-3xl font-serif text-[var(--dark-brown)]'>
-                        Distribuição RSVP
-                    </h2>
-                </div>
+        <div className='flex flex-col md:flex-col p-3 bg-[var(--ivory)] mt-10 shadow rounded-2xl '>
+            <div className='flex flex-col mt-5 space-y-3'>
+                <p className='text-[var(--warm-gold)] text-xs tracking-widest uppercase'>Visão Geral</p>
+                <h2 className='text-3xl font-serif text-[var(--dark-brown)]'>Distribuição RSVP</h2>
             </div>
 
-            <span className='text-2xl md:text-3xl font-serif text-[var(--dark-brown)] '>
-                Atualização automática
-            </span>
-        </div>
+            <div className='h-64 w-full mt-10'>
+                <ResponsiveContainer height="100%" width="100%">
+                    <BarChart data={chartData}>
+                        <XAxis dataKey="name" stroke='var(--strokeX)'/>
 
-        <div className='h-64 sm:h-72 md:h-80 w-full'>
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                    <XAxis dataKey="name"
-                    stroke="var(--strokeX)"/>
+                        <YAxis stroke='var(--strokeY)'/>
 
-                    <YAxis stroke="var(--strokeY)"/>
+                        <Tooltip contentStyle={{
+                            border: '12px',
+                            borderRadius: '12px',
+                            backgroundColor: '#ffff'
+                        }}/>
 
-                    <Tooltip 
-                        contentStyle={{
-                            backgroundColor: "#ffff",
-                            border: "1px solid #eaded6",
-                            borderRadius: "12px"
-                        }}
-                    />
-
-                    <Bar dataKey="value" radius={[4,4,0,0]}>
-                        {chartData.map((entry, index) => (
-                            <Cell key={index} fill={entry.fill}/>
-                        ))}
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
-        </div>
+                        <Bar dataKey="value" radius={[4,4,0,0]}/>
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
-
+        </div>
     </div>
   )
 }

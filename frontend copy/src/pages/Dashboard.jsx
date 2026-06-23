@@ -50,9 +50,9 @@ function Dashboard() {
   const pending = total - confirmed
 
   const chartData = [
-    { name: "Total", value: total, fill: "#4a3428" },
-    { name: "Confirmados", value: confirmed, fill: "#7f9b7c" },
-    { name: "Pendentes", value: pending, fill: "#c9a063" }
+    { name: "Total", value: total, fill: "var(--border-total)" },
+    { name: "Confirmados", value: confirmed, fill: "var(--border-confirmed)" },
+    { name: "Pendentes", value: pending, fill: "var(--border-pending)" }
   ]
 
   return (
@@ -88,11 +88,11 @@ function Dashboard() {
 
               <XAxis
                 dataKey="name"
-                stroke="#9f8878"
+                stroke="var(--storkeX)"
               />
 
               <YAxis
-                stroke="#c7b7ad"
+                stroke="var(--strokeY)"
               />
 
               <Tooltip

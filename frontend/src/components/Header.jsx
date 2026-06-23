@@ -17,15 +17,15 @@ function Header({page}) {
                     <h1 className='text-3xl font-serif font-light'>Recepção</h1>
             </div>
 
-            <div className='flex space-x-6 items-center'>
+            <div className='flex space-x-6 items-center shadow-lg p-2 rounded-2xl '>
                 {role === "admin" && (
-                    <Link to="/dashboard">Dashboard</Link>
+                    <Link className='' to="/dashboard">Dashboard</Link>
                 )}
 
                 <Link to="/reception">Recepção</Link>
 
                 {role === "admin" && (
-                    <Link to="/Admin">Administração</Link>
+                    <Link to="/admin">Administração</Link>
                 )}
             </div>
 

@@ -5,7 +5,7 @@ export function PrivateRoute({children, allowedRoles}) {
     const token = localStorage.getItem('token')
     const role = localStorage.getItem('role')
 
-    if(!token ) {
+    if(!token) {
         return <Navigate to="/" />
     }
 
@@ -14,6 +14,5 @@ export function PrivateRoute({children, allowedRoles}) {
     }
 
     return children
-
 }
 

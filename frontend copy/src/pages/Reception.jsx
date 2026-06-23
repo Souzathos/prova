@@ -72,6 +72,7 @@ function Reception() {
 
             {filtered.map((g) => (
                 <GuestCard key={g.id} guest={g}
+                ref={ref}
                 ><button disabled={g.checked_in}
                     onClick={() => checkin(g.id)}
                     className={`${g.checked_in ?  "bg-[#7f9b7c] text-white cursor-default"

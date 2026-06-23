@@ -18,8 +18,9 @@ export class GuestController {
 
     async list(req: Request, res:Response) {
         try {
-            const {name} = req.query
-            const guest = await this.service.list(name as string)
+            // status removido: não filtramos mais por status na API
+            const {name, table_number} = req.query
+            const guest = await this.service.list(name as string, Number(table_number))
 
             return res.status(200).json(guest)
         } catch(e: any) {
@@ -63,6 +64,16 @@ export class GuestController {
 
             return res.status(200).json(dash)
         } catch(e: any) {
+            return res.status(400).json({message: e.message})
+        }
+    }
+
+    async removeCheckin(req:Request, res:Response) {
+        try {
+            const guest = await this.service.removeCheckin(Number(req.params.id))
+
+            return res.status(200).json(guest)
+        } catch(e: any ) {
             return res.status(400).json({message: e.message})
         }
     }

@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import * as dotenv from 'dotenv'
 import { User } from "../models/User";
 import { Guest } from "../models/Guest";
+import { TableConfig } from "../models/TableConfig";
 
 dotenv.config()
 
@@ -12,7 +13,7 @@ export const AppDatSource = new DataSource({
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: [User, Guest],
+    entities: [User, Guest, TableConfig],
     synchronize: true,
     logging: true
 })

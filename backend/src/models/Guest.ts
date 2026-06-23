@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { TableConfig } from "./TableConfig";
 
 @Entity('guests')
 export class Guest {
@@ -17,10 +18,13 @@ export class Guest {
     @Column({nullable: false, length: 11, unique: true}) 
     phone: string
 
-    @Column({nullable: false})
-    table_number: number
-
     @Column({nullable: false, default: false})
     checked_in: boolean
-    
+
+    @Column({type: 'timestamp', nullable: true})
+    checked_at: Date | null
+        
+    @ManyToOne(() => TableConfig, (t) => t.guests, {nullable: false, onDelete: 'RESTRICT'})
+    @JoinColumn()
+    table_number: TableConfig
 }
