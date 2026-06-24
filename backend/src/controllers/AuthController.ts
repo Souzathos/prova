@@ -5,10 +5,13 @@ import { generateToken } from "../utils/jwt";
 export class AuthController {
     private service = new AuthService()
 
-    async login(req: Request, res:Response) {
+    async login(req:Request, res:Response) {
         try {
             const {email, password} = req.body
             const user = await this.service.login(email, password)
+
+            const safe = {...user}
+            delete(safe as any).password
 
             const token = generateToken({
                 id: user.id,
@@ -16,12 +19,9 @@ export class AuthController {
                 role: user.role
             })
 
-            const safe = {...user}
-            delete(safe as any).password
-
-            return res.status(200).json({user: safe, token})
+            return res.status(200).json({safe, token})
         } catch(e: any) {
             return res.status(400).json({message: e.message})
-        }   
+        }
     }
 }

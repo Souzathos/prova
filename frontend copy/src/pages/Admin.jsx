@@ -37,7 +37,7 @@ function Admin() {
     async function save(id) {
         try {
 
-            if (!form.name || !form.email) {
+            if (!form.name || !form.email || !form.phone || !form.table_number) {
                 throw new Error('Nome e Email são obrigatorios')
             }
 

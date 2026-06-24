@@ -1,8 +1,7 @@
 import bcrypt from 'bcrypt'
-
-async function hashada() {
-    const hash = await bcrypt.hash('12345678', 10)
-    console.log(hash)
+async function hash() {
+    const password = await bcrypt.hash('123456', 10)
+    console.log(password)
 }
 
-hashada()
+hash()

@@ -1,79 +1,70 @@
 import { Like } from "typeorm";
-import { AppDatSource } from "../config/data-source";
+import { AppDataSource } from "../config/data-source";
 import { Guest } from "../models/Guest";
 import { TableConfig } from "../models/TableConfig";
 
 export class GuestService {
-    private repo = AppDatSource.getRepository(Guest)
-    private tableRepo = AppDatSource.getRepository(TableConfig)
+    private repo = AppDataSource.getRepository(Guest)
+    private tableRepo = AppDataSource.getRepository(TableConfig)
 
     async register(data: any) {
-        const exists = await this.repo.findOneBy({email: data.email})
-        if(exists) throw new Error('Email já cadastrado')
+        const exists = await this.repo.findOne({where: {email: data.email}})
+        if(exists) throw new Error('E-mail já cadastrado')
+        const cpfExists = await this.repo.findOne({where: {cpf: data.cpf}})
+        if(cpfExists) throw new Error('CPF já cadastrado')
+
         const tableConfig = await this.tableRepo.findOne({
             where: {table_number: data.table_number},
-            relations: ['guests']
+            relations: {guests: true}
         })
-
         if(!tableConfig) throw new Error('Mesa não encontrada')
-
-        if(tableConfig.guests.length >= tableConfig.max_lenght){
-            throw new Error(`Mesa ${tableConfig.table_number} está lotada (capacidade: ${tableConfig.max_lenght})`)
+        if(tableConfig.guests.length >= tableConfig.max_length) {
+            throw new Error(`Mesa ${tableConfig.table_number} está lotada. Capacidade máxima: ${tableConfig.max_length}`)
         }
 
-        const guest = this.repo.create({
-            name: data.name, 
-            cpf: data.cpf,
-            email: data.email,
-            phone: data.phone,
-            table_number: tableConfig
-        })
-
+        const guest = this.repo.create({...data, table_number: tableConfig})
         return this.repo.save(guest)
     }
 
-    async list(name?:string, table_number?: number) {
+    async list(name?:string, table_number?:number) {
         const where: any = {}
 
         if(name) where.name = Like(`%${name}%`)
-        // table_number é a relação (TableConfig); filtramos pela coluna table_number dela
         if(table_number) where.table_number = {table_number: table_number}
 
-        // status saiu daqui: a ordenação/visualização por status é feita no front
         return this.repo.find({
             where,
-            relations: ['table_number']
+            relations: {table_number: true}
         })
     }
 
-    async update(guestId:number, data:any) {
+    async update(guestId:number, data: any) {
         const exists = await this.repo.findOneBy({id: guestId})
-        if(!exists) throw new Error('Convidado nao encontrado')
-
-        // o front manda só o número da mesa; trocamos pelo objeto TableConfig antes de salvar
+        if(!exists) throw new Error('Convidado não encontrado')
         if(data.table_number) {
-            const tableConfig = await this.tableRepo.findOneBy({table_number: data.table_number})
-            if(!tableConfig) throw new Error('Mesa não encontrada')
-            data.table_number = tableConfig
+            const table = await this.tableRepo.findOne({where: {table_number: data.table_number}, relations: {guests : true}})
+            if(!table) throw new Error('Mesa não encontrada')
+            if(table.guests.length >= table.max_length) {
+                throw new Error(`Mesa ${table.table_number} está lotada. Ocupação máxima: ${table.max_length}` )
+            }
+            data.table_number = table
         }
 
         return this.repo.update(guestId, data)
+        
     }
 
-
-    async delete(id:number) {
-        const exists = await this.repo.findOneBy({id})
-        if(!exists) throw new Error('Convidado nao encontrado')
-        
-        await this.repo.delete(id)
-
-        return {message: `${exists.name} excluído com sucesso!`}
+    async delete(id:number)  {
+        const guest = await this.repo.findOneBy({id})
+        if(!guest) throw new Error('Convidado não encontrado')
+        this.repo.delete(id)
+        return {message: "Convidado deletado com sucesso!"}
     }
 
     async checkin(id: number) {
         const guest = await this.repo.findOneBy({id})
-        if(!guest) throw new Error('Convidado nao encontrado')
-        if(guest.checked_in) throw new Error('Check-in Ja realizado')
+        if(!guest) throw new Error('convidado não encontrado')
+        if(guest.checked_in) throw new Error('Check-in já realizado')
 
         guest.checked_in = true
         guest.checked_at = new Date()
@@ -81,10 +72,10 @@ export class GuestService {
         return this.repo.save(guest)
     }
 
-    async removeCheckin(id: number) {
+    async undoCheckin(id: number) {
         const guest = await this.repo.findOneBy({id})
         if(!guest) throw new Error('convidado não encontrado')
-        if(!guest.checked_in) throw new Error('Check-in não realizado')
+        if(!guest.checked_in) throw new Error('Check-in já realizado')
 
         guest.checked_in = false
         guest.checked_at = null
@@ -98,11 +89,11 @@ export class GuestService {
         const total = guests.length
         const confirmed = guests.filter(g => g.checked_in).length
         const pending = total - confirmed
-
+        
         return {
             total,
             confirmed,
-            pending,
+            pending
         }
     }
-}
+ }

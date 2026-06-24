@@ -6,12 +6,12 @@ export class TableConfig {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({nullable: false, unique: true})
+    @Column({nullable: false})
     table_number: number
 
     @Column({nullable: false})
-    max_lenght: number
+    max_length: number
 
     @OneToMany(() => Guest, (g) => g.table_number)
-    guests: Guest[] 
+    guests: Guest[]
 }
