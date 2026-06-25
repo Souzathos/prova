@@ -7,4 +7,5 @@ const dashboardRoutes = Router()
 const dash = new GuestController()
 
 dashboardRoutes.get('/', authMiddleware, roleMiddleware('admin'), dash.dashboard.bind(dash))
+
 export default dashboardRoutes

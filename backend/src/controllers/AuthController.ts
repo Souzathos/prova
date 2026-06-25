@@ -5,7 +5,7 @@ import { generateToken } from "../utils/jwt";
 export class AuthController {
     private service = new AuthService()
 
-    async login(req:Request, res:Response) {
+    async login(req: Request, res:Response) {
         try {
             const {email, password} = req.body
             const user = await this.service.login(email, password)
@@ -18,10 +18,9 @@ export class AuthController {
                 email: user.email,
                 role: user.role
             })
-
             return res.status(200).json({safe, token})
         } catch(e: any) {
-            return res.status(400).json({message: e.message})
+            return res.status(404).json({message: e.message})
         }
     }
 }

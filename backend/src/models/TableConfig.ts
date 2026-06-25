@@ -1,10 +1,10 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Guest } from "./Guest";
 
-@Entity('tables_config')
+@Entity('table_config')
 export class TableConfig {
     @PrimaryGeneratedColumn()
-    id: number
+    id:number
 
     @Column({nullable: false})
     table_number: number

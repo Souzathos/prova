@@ -1,56 +1,46 @@
-import { Mail, MapPin, Phone, User } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import React from 'react'
 
 function GuestCard({ guest, children }) {
-    const initials = guest.name?.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-    return (
-        <div className=' bg-[#f7f3ef] border border-[#eaded6] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition mb-4'>
-            <div className='flex flex-col xl:flex-row xl:items-center justify-between gap-5'>
-                <div className='flex flex-col sm:flex-row sm:items-start gap-4 w-full min-w-0'>
+  return (
+    <div className='bg-[var(--ivory)] border border-[var(--cream)] rounded-2xl p-4 shadow transition mb-4'>
+      <div className='flex flex-col xl:flex-row justify-between xl:items-center gap-2'>
+        <div className='flex flex-col sm:flex-row w-full sm:items-start gap-4 min-w-0'>
+          <div className='bg-[var(--cream)] min-w-14 w-14 h-14 rounded-full shadow-inner'>
 
-                    <div className='min-w-14 w-14 h-14 rounded-full bg-[#e7d4c7] flex items-center justify-center  text-[#6a4b3c] font-serif text-lg shadow-inner'>
-                        {initials}
-                    </div>
-                    <div className='flex flex-col gap-3 w-full min-w-0'>
-                        <div className='flex flex-col lg:flex-row lg:items-center lg:gap-4 gap-2 lg:just'>
+          </div>
+          <div className='flex flex-col gap-1'>
+            <div className='flex items-center gap-2'>
+              <p>{guest.name}</p>
 
-                            <h2 className='text-lg font-semibold text-[#4a3428] wrap-break-word'>{guest.name}</h2>
-                            <div className='flex items-center gap-1  text-[#9b7d6d]'>
-
-                                <MapPin size={14}></MapPin>
-                                <p>Mesa {guest.table_number}</p>
-
-                            </div>
-                        </div>
-
-                        <div className='flex  items-center space-x-2'>
-                            <Mail size={14}></Mail>
-                            <p>{guest.email}</p>
-
-                            <Phone size={14}></Phone>
-                            <p>{guest.phone}</p>
-                        </div>
-                        <div>
-                            {guest.checked_in ? (
-                                <span className='inline-flex items-center gap-2 bg-[#dce8da] text-[#567253] text-xs py-1 px-3 rounded-full '>
-                                    ✓ Check-in realizado
-                                </span>
-                            ) : (
-                                <span className='inline-flex items-center gap-2 bg-[#F5EDE2] text-[#C99458] text-sm py-1 px-3 rounded-full'>Pendente</span>
-                            )}
-
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    
-                </div>
-                {children}
+              <div className='flex items-center text-sm space-x-1 text-[var(--warm-gold)]'>
+                <MapPin size={14} />
+                {/* a relação retorna o objeto TableConfig; o número da mesa é table_number, não number */}
+                <p>{guest.table_number?.table_number}</p>
+              </div>
             </div>
 
+            <div className='flex space-x-2 items-center'>
+              <Mail size={14} />
+              <p>{guest.email}</p>
+
+              <Phone size={14}/>
+              <p>{guest.phone}</p>
+            </div>
+
+            <div className='mt-3'>
+              {guest.checked_in ? (
+                <span className='items-center gap-2 bg-[var(--light-green)] text-[var(--ivory)] p-2 text-xs rounded-full shadow'>Check-in realizado</span>
+              ) : (
+                <span className='items-center gap-2 bg-[var(--warning)] text-[var(--ivory)] p-2 text-xs rounded-full shadow'>Pendente</span>
+              )}
+            </div>
+          </div>
         </div>
-    )
+            {children}
+      </div>
+    </div>
+  )
 }
 
 export default GuestCard

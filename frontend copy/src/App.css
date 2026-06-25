@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+:root {
+  --ivory: #FBF7F2;
+  --cream: #F5EDF2;
+
+  --blush: #E0C0B8;
+  --dusty-rose: #CFA89A;
+
+  --light-brown: #A88471;
+  --dark-brown: #3D2E26;
+
+  --warm-gold: #C9A86A;
+  --light-green: #8FA68C;
+
+  --success: #6F8F6F;
+  --warning: #C99458;
+  --danger: #B5564A;
+
+  --border-total: #4a3428;
+  --border-confirmed: #4a3428;
+  --border-pending: #c9a063;
+  
+  --strokeY: #c7b7ad;
+  --strokeX:#9f8878;
+}

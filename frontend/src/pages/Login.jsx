@@ -5,26 +5,27 @@ function Login() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState(null)
 
-
     async function handleLogin() {
         try {
-            const response = await fetch('http://localhost:3000/user/login', {
+            const res = await fetch('http://localhost:3000/user/login', {
                 method: 'POST',
                 body: JSON.stringify({email, password}),
-                headers: {'Content-type': 'application/json'}
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             })
-            const data = await response.json()
-            localStorage.setItem('role', data.user.role)
-            localStorage.setItem('token', data.token)
+            const data = await res.json()
+            localStorage.setItem('role', data.safe.role)
+            localStorage.setItem('token', data.token) 
 
-            if(data.user.role === "admin") {
-                window.location.href = "/dashboard"
+            if(data.safe.role === "admin") {
+                window.location.href = "/admin"
             } else {
                 window.location.href = "/reception"
             }
         } catch(e) {
-            setError('erro ao fazer login', e)
-        }
+            setError('Erro ao fazer login', e)
+        } 
     }
 
     useEffect(() => {
@@ -32,53 +33,34 @@ function Login() {
         const t = setTimeout(() => setError(null), 3000)
         return () => clearTimeout(t)
     })
-  return (
-    <div className='min-h-screen bg-[var(--ivory)] flex items-center justify-center p-6'>
-            <div className='w-full max-w-6xl bg-[var(--cream)] rounded-sm overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-2'>
 
-                <div className='relative hidden lg:block'>
-                    <img src="https://images.pexels.com/photos/15641348/pexels-photo-15641348.jpeg" alt="Wedding"
-                    className='w-full h-full object-cover' />
+  return (
+    <div className='min-h-screen flex justify-center items-center p-4 bg-[var(--cream)]'>
+        <div className='flex w-full rounded shadow bg-[var(--ivory)]'>
+            <div className='w-1/2 rounded hidden md:block'>
+                    <img src="https://images.pexels.com/photos/28998608/pexels-photo-28998608.jpeg" alt="" />
+            </div>
+            <div className='flex flex-col p-4 w-full md:w-1/2 mt-10'>
+                <div className='flex flex-col mt-10'>
+                    <p className='text-[var(--dark-brown)] text-xl font-serif'>Acesso restrito</p>
+                    <h2 className='text-[var(--warm-gold)] text-7xl font-serif'>Senac Wedding</h2>
+                    <p className='text-[var(--dark-brown)] text-lg mt-2'>Bem-vindo(a)!</p>
                 </div>
 
-                <div className='flex items-center justify-center px-8 py-16 bg-[var(--cream)]'>
-                    <div className='w-full max-w-md'>
-                            <p className='text-[var(--warning)] text-sm mb-3'>
-                                Acesso Restrito
-                            </p>
-                            <h1 className='text-6xl font-serif text-[var(--dark-brown)] mb-2'>
-                                Wedding Pass
-                            </h1>
+                <label className='p-2 text-[var(--warm-gold)] text-lg mt-20 semibold font-serif' >E-mail</label>
+                <input type="text" placeholder='example@gmail.com' value={email} onChange={(e) => setEmail(e.target.value)} 
+                className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-2'/>
 
-                            <p className='text-[var(--light-brown)] mb-10'>Celebre cada momento</p>
+                <label className='p-2 text-[var(--warm-gold)] text-lg  semibold font-serif' >Senha</label>
+                <input type='password' placeholder='*******' value={password} onChange={(e) => setPassword(e.target.value)} 
+                className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-2'/>
 
-                            <div>
-                               <label className='block text-xs text-[var(--blush)] mb-2'>E-mail</label> 
 
-                               <input type="email" placeholder='example@email.com' value={email} 
-                               onChange={(e) => setEmail(e.target.value)}
-                               className='w-full border-b border-[value(--warm-gold)] bg-transparent py-3 outline-none text-[var(--dark-brown)] placeholder: text[var(--light-brown)] focus:border-[var(--warm-gold)] transition'/>
-                            </div>
-
-                            <div>
-                                <label className='block text-xs  text-[var(--blush)] mt-2'>Senha</label>
-
-                                <input type="password" placeholder='••••••••' value={password} onChange={(e) => setPassword(e.target.value)}
-                                className='w-full border-b border-[value(--warm-gold)] bg-transparent py-3 outline-none text-[var(--dark-brown)] placeholder: text[var(--light-brown)] focus:border-[var(--warm-gold)] transition'/>
-                            </div>
-
-                            {error && (
-                                <p className='text-[var(--danger)] text-xs'>{error}</p>
-                            )}
-
-                            <button onClick={handleLogin}   
-                            className='cursor-pointer w-full bg-[var(--warm-gold)]/80 hover:bg-[var(--warm-gold)] transition py-4 rounded-full mt-6' >
-                                Entrar
-                            </button>
-                    </div>
-                </div>                
-
+                {error && (<p className='text-[var(--danger)] text-sm'>{error}</p>)}
+                <button className='p-4 w-full shadow rounded-full bg-[var(--warm-gold)] mt-20 text-white text-lg cursor-pointer'
+                onClick={handleLogin}>Entrar</button>
             </div>
+        </div>
     </div>
   )
 }

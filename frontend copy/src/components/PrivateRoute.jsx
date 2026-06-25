@@ -1,6 +1,7 @@
-import { Navigate } from "react-router-dom"
+import React from 'react'
+import { Navigate } from 'react-router-dom'
 
-export function PrivateRoute({allowedRoles, children}) {
+export function PrivateRoute({children, allowedRoles}) {
     const token = localStorage.getItem('token')
     const role = localStorage.getItem('role')
 
@@ -9,8 +10,9 @@ export function PrivateRoute({allowedRoles, children}) {
     }
 
     if(allowedRoles && !allowedRoles.includes(role)) {
-        return <Navigate to="/reception"/>
+        return <Navigate to="/reception" />
     }
 
     return children
 }
+

@@ -4,28 +4,24 @@ import { TableConfig } from "./TableConfig";
 @Entity('guests')
 export class Guest {
     @PrimaryGeneratedColumn()
-    id: number
+    id:number
 
-    @Column({ nullable: false, length: 255 })
+    @Column({nullable: false, length: 255})
     name: string
 
-    @Column({ nullable: false, length: 255, unique: true })
+    @Column({nullable: false, unique: true, length: 255})
     email: string
 
-    @Column({ nullable: false, length: 11, unique: true })
-    cpf: string
-
-    @Column({ nullable: false, length: 11, unique: true })
+    @Column({nullable: false, unique: true, length: 11})
     phone: string
 
-    @Column({ nullable: false, default: false })
-    checked_in: boolean
-
-    @Column({type: 'timestamp', nullable: true})
+    @Column({nullable: true, type: 'timestamp'})
     checked_at: Date | null
+
+    @Column({nullable: false, default: false})
+    checked_in: boolean
 
     @ManyToOne(() => TableConfig, (t) => t.guests, {nullable: false, onDelete: 'RESTRICT'})
     @JoinColumn()
     table_number: TableConfig
-    
 }

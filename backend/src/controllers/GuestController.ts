@@ -1,21 +1,19 @@
 import { Request, Response } from "express";
 import { GuestService } from "../services/GuestService";
-import { guestSchema } from "../validators/guestValidator";
 
 export class GuestController {
     private service = new GuestService()
 
     async register(req:Request, res:Response) {
         try {
-            const data = guestSchema.parse(req.body)
+            const data = req.body
             const guest = await this.service.register(data)
 
             return res.status(201).json(guest)
-        } catch(e:any) {
+        } catch(e: any) {
             return res.status(400).json({message: e.message})
         }
     }
-
 
     async list(req:Request, res:Response) {
         try {
@@ -34,12 +32,12 @@ export class GuestController {
             const guest = await this.service.update(Number(id), req.body)
 
             return res.status(200).json(guest)
-        } catch(e: any) {
+        } catch(e: any){
             return res.status(400).json({message: e.message})
         }
     }
 
-    async delete(req:Request, res:Response) {
+    async delete(req:Request, res:Response){
         try {
             const id = req.params.id
             const guest = await this.service.delete(Number(id))
@@ -61,7 +59,7 @@ export class GuestController {
         }
     }
 
-    async undoCheckin(req:Request, res:Response) {
+     async undoCheckin(req:Request, res:Response) {
         try {
             const id = req.params.id
             const guest = await this.service.undoCheckin(Number(id))
@@ -77,7 +75,7 @@ export class GuestController {
             const dash = await this.service.dashboard()
 
             return res.status(200).json(dash)
-        } catch(e: any) {
+        }catch(e: any) {
             return res.status(404).json({message: e.message})
         }
     }
