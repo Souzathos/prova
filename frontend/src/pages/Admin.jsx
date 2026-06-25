@@ -1,11 +1,12 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useReactToPrint } from 'react-to-print'
 import Hero from '../components/Hero'
 import Header from '../components/Header'
+import { listGuests, registerGuest, updateGuest, deleteGuest, undoCheckinGuest } from '../services/guestService'
 
 function Admin() {
     const [guests, setGuests] = useState([])
-    const [error, setError] = useState(null)
+    const [feedback, setFeedback] = useState(null)
     const [editingId, setEditingId] = useState(null)
     const [loading, setLoading] = useState(null)
     const [form, setForm] = useState({
@@ -20,55 +21,45 @@ function Admin() {
         contentRef: ref
     })
 
+    useEffect(() => {
+        load()
+    }, [])
+
+    useEffect(() => {
+        if (!feedback) return
+        const t = setTimeout(() => setFeedback(null), 3000)
+        return () => clearTimeout(t)
+    }, [feedback])
+
     async function load() {
         try {
             setLoading(true)
-            const res = await fetch(`http://localhost:3000/guest/list`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-            const data = await res.json()
+            const data = await listGuests()
             setGuests(data)
+        } catch (e) {
+            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
         } finally {
             setLoading(false)
         }
     }
 
-    async function save(id) {
+    async function save() {
         try {
-            if (!form.name || !form.email || !form.phone || !form.table_number) throw new Error('Formulário incompleto.')
+            const payload = { ...form, table_number: Number(form.table_number) }
 
             if (editingId) {
                 if (!confirm('Deseja Atualizar o convidado?')) return
-                const res = await fetch(`http://localhost:3000/guest/update/${editingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(form)
-                })
-                if (!res.ok) throw new Error('Erro ao editar convidado')
-                load()
+                const data = await updateGuest(editingId, payload)
+                setFeedback({ type: 'success', message: data.message || 'Convidado atualizado!' })
                 setEditingId(null)
-                resetForm()
             } else {
-                const res = await fetch('http://localhost:3000/guest/register', {
-                    method: 'POST',
-                    body: JSON.stringify(form),
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'applcation/json'
-                    }
-                })
-                if (!res.ok) throw new Error('Erro ao criar convidado')
-                load()
-                resetForm()
+                const data = await registerGuest(payload)
+                setFeedback({ type: 'success', message: data.message || 'Convidado cadastrado!' })
             }
+            load()
+            resetForm()
         } catch (e) {
-            setError('Erro ao salvar convidado', e)
+            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
         }
     }
 
@@ -95,31 +86,22 @@ function Admin() {
     async function remove(id) {
         try {
             if (!confirm('Deseja excluir o convidado?')) return
-            const res = await fetch(`http://localhost:3000/guest/delete/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            })
+            const data = await deleteGuest(id)
+            setFeedback({ type: 'success', message: data.message || 'Convidado excluído!' })
+            load()
         } catch (e) {
-            setError('Erro ao editar convidado', e)
+            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
         }
     }
 
     async function undoCheckin(id) {
         try {
             if (!confirm('Deseja desfazer o check-in?')) return
-            const res = await fetch(`http://localhost:3000/guest/remove-checkin/${id}`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            })
+            const data = await undoCheckinGuest(id)
+            setFeedback({ type: 'success', message: data.message || 'Check-in desfeito!' })
             load()
         } catch (e) {
-            setError('Erro ao desfazer checkin', e)
+            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
         }
     }
 
@@ -129,21 +111,38 @@ function Admin() {
             <Header page="admin" />
             <Hero page="admin" guests={guests} funcao={handlePrint} />
 
+            {feedback && (
+                <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold max-w-[90vw] text-center ${
+                    feedback.type === 'success' ? 'bg-[var(--success)]' : 'bg-[var(--danger)]'
+                }`}>
+                    {feedback.message}
+                </div>
+            )}
+
             <div className='w-full p-2 flex flex-col md:flex-row'>
-                <div className='bg-[var(--ivory)] p-2 shadow rounded-2xl w-1/2'>
+                <div className='bg-[var(--ivory)] p-4 shadow rounded-2xl w-full md:w-1/2'>
                     <p>Novo usuário</p>
                     <h2>Cadastro</h2>
 
                     <input type="text" placeholder='Nome Completo' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
                     <input type="text" placeholder='E-mail' value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
-                    <input type="text" placeholder='Telefome' value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
-                    <input type="text" placeholder='Número da mesa' value={form.table_number} onChange={(e) => setForm({ ...form, table_number: Number(e.target.value) })}
-                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
+                    <input type="text" placeholder='Telefone' value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
+                    <input type="text" placeholder='Número da mesa' value={form.table_number} onChange={(e) => setForm({ ...form, table_number: e.target.value })}
+                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
 
-                    <button onClick={() => save()} className={`${editingId ? 'bg-[var(--warning)] ' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)]"}`}>{editingId ? 'Atualizar' : 'Cadastrar'}</button>
+                    <div className='flex gap-2 mt-5'>
+                        <button onClick={() => save()} className={`w-full py-3 rounded-xl text-lg font-bold cursor-pointer ${editingId ? 'bg-[var(--warning)] text-white' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)]"}`}>
+                            {editingId ? 'Atualizar' : 'Cadastrar'}
+                        </button>
+                        {editingId && (
+                            <button onClick={resetForm} className='py-3 px-6 rounded-xl text-lg cursor-pointer bg-gray-300 text-gray-700'>
+                                Cancelar
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div>

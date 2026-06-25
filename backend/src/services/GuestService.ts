@@ -10,7 +10,7 @@ export class GuestService {
     async register(data:any) {
         const exists = await this.repo.findOne({where: {email: data.email}})
         if(exists) throw new Error('Convidado já cadastrado')
-        
+
         const tableConfig = await this.tableRepo.findOne({
             where: {table_number: data.table_number },
             relations: {guests : true}
@@ -30,10 +30,26 @@ export class GuestService {
         if(name) where.name = Like(`%${name}%`)
         if(table_number) where.table_number = {table_number: table_number}
 
-        return this.repo.find({
+        const guests = await this.repo.find({
             where,
             relations: {table_number: true}
         })
+
+        const tables = await this.tableRepo.find({ relations: { guests: true } })
+        const countByTableId: Record<number, number> = {}
+        for (const t of tables) {
+            countByTableId[t.id] = t.guests?.length || 0
+        }
+
+        return guests.map(g => ({
+            ...g,
+            table_number: g.table_number ? {
+                id: g.table_number.id,
+                table_number: g.table_number.table_number,
+                max_length: g.table_number.max_length,
+                guest_count: countByTableId[g.table_number.id] || 0
+            } : null
+        }))
     }
 
     async update(guestId:number, data: any) {
@@ -61,7 +77,7 @@ export class GuestService {
 
     this.repo.delete(id)
     return {message: 'Convidado deletado com sucesso!'}
-   } 
+   }
 
    async checkin(id:number) {
         const guest = await this.repo.findOneBy({id})
@@ -72,7 +88,7 @@ export class GuestService {
         guest.checked_at = new Date(Date.now() - 3 * 60 * 60 * 1000)
 
         return this.repo.save(guest)
-        
+
    }
 
    async undoCheckin(id:number) {
@@ -84,7 +100,7 @@ export class GuestService {
         guest.checked_at = null
 
         return this.repo.save(guest)
-        
+
    }
 
    async dashboard() {
