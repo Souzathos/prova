@@ -20,14 +20,13 @@ function Login() {
         } catch(e) {
             setError(e.message || 'Erro ao fazer login')
         }
-
     }
 
     useEffect(() => {
         if(!error) return
         const t = setTimeout(() => setError(null), 3000)
         return () => clearTimeout(t)
-    })
+    }, [error])
 
   return (
     <div className='min-h-screen flex justify-center items-center p-4 bg-[var(--cream)]'>

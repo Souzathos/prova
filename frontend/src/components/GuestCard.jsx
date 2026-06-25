@@ -35,7 +35,7 @@ function GuestCard({ guests, children }) {
                             <p>{guests.phone}</p>
                         </div>
                         {guests.checked_in ? (
-                            <span className='bg-[var(--light-green)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Check-in Realizado - {guests.checked_at}</span>
+                            <span className='bg-[var(--light-green)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Check-in realizado - {new Date(guests.checked_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) }</span>
                         ) : <span className='bg-[var(--warning)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Pendente </span>}
                     </div>
                 </div>
