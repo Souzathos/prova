@@ -2,6 +2,9 @@ import React from 'react'
 import { Mail, MapPin, Phone } from 'lucide-react'
 
 function GuestCard({ guests, children }) {
+    const count = guests.table_number?.guest_count ?? 0
+    const max = guests.table_number?.max_length ?? 0
+    const isFull = max > 0 && count >= max
 
     return (
         <div className='bg-[var(--ivory)] border border-[var(--cream)] rounded-2xl p-4'>
@@ -39,6 +42,16 @@ function GuestCard({ guests, children }) {
                         ): <span className='bg-[var(--warning)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Pendente </span>}
                     </div>
                 </div>
+
+                {guests.checked_in ? (
+                    <span className='bg-[var(--light-green)] text-white font-bold text-center rounded-full text-sm p-2'>
+                        Check-in realizado - {new Date(guests.checked_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                ) : (
+                    <span className='bg-[var(--warning)] text-white font-bold text-center rounded-full text-sm p-2'>
+                        Pendente
+                    </span>
+                )}
 
                 {children}
             </div>
