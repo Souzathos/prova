@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { useReactToPrint } from 'react-to-print'
+import Hero from '../components/Hero'
+import Header from '../components/Header'
 
 function Admin() {
     const [guests, setGuests] = useState([])
@@ -32,14 +34,14 @@ function Admin() {
         } finally {
             setLoading(false)
         }
-    }    
+    }
 
     async function save(id) {
         try {
-            if(!form.name || !form.email || !form.phone || !form.table_number) throw new Error('Formulário incompleto.')
-            
-            if(editingId) {
-                if(!confirm('Deseja Atualizar o convidado?')) return
+            if (!form.name || !form.email || !form.phone || !form.table_number) throw new Error('Formulário incompleto.')
+
+            if (editingId) {
+                if (!confirm('Deseja Atualizar o convidado?')) return
                 const res = await fetch(`http://localhost:3000/guest/update/${editingId}`, {
                     method: 'PUT',
                     headers: {
@@ -48,11 +50,11 @@ function Admin() {
                     },
                     body: JSON.stringify(form)
                 })
-                if(!res.ok) throw new Error('Erro ao editar convidado')
+                if (!res.ok) throw new Error('Erro ao editar convidado')
                 load()
                 setEditingId(null)
                 resetForm()
-            }  else {
+            } else {
                 const res = await fetch('http://localhost:3000/guest/register', {
                     method: 'POST',
                     body: JSON.stringify(form),
@@ -61,11 +63,11 @@ function Admin() {
                         'Content-Type': 'applcation/json'
                     }
                 })
-                if(!res.ok) throw new Error('Erro ao criar convidado')
+                if (!res.ok) throw new Error('Erro ao criar convidado')
                 load()
                 resetForm()
             }
-        }catch(e) {
+        } catch (e) {
             setError('Erro ao salvar convidado', e)
         }
     }
@@ -92,7 +94,7 @@ function Admin() {
 
     async function remove(id) {
         try {
-            if(!confirm('Deseja excluir o convidado?')) return
+            if (!confirm('Deseja excluir o convidado?')) return
             const res = await fetch(`http://localhost:3000/guest/delete/${id}`, {
                 method: 'DELETE',
                 headers: {
@@ -100,14 +102,14 @@ function Admin() {
                     'Content-Type': 'application/json'
                 }
             })
-        } catch(e) {
+        } catch (e) {
             setError('Erro ao editar convidado', e)
         }
     }
 
     async function undoCheckin(id) {
         try {
-            if(!confirm('Deseja desfazer o check-in?')) return
+            if (!confirm('Deseja desfazer o check-in?')) return
             const res = await fetch(`http://localhost:3000/guest/remove-checkin/${id}`, {
                 method: 'POST',
                 headers: {
@@ -116,15 +118,40 @@ function Admin() {
                 }
             })
             load()
-        } catch(e) {
+        } catch (e) {
             setError('Erro ao desfazer checkin', e)
         }
     }
 
 
-  return (
-    <div>Admin</div>
-  )
+    return (
+        <div className='min-h-screen bg-[var(--cream)] p-4'>
+            <Header page="admin" />
+            <Hero page="admin" guests={guests} funcao={handlePrint} />
+
+            <div className='w-full p-2 flex flex-col md:flex-row'>
+                <div className='bg-[var(--ivory)] p-2 shadow rounded-2xl w-1/2'>
+                    <p>Novo usuário</p>
+                    <h2>Cadastro</h2>
+
+                    <input type="text" placeholder='Nome Completo' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+                    <input type="text" placeholder='E-mail' value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+                    <input type="text" placeholder='Telefome' value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+                    <input type="text" placeholder='Número da mesa' value={form.table_number} onChange={(e) => setForm({ ...form, table_number: Number(e.target.value) })}
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+
+                    <button onClick={() => save()} className={`${editingId ? 'bg-[var(--warning)] ' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)]"}`}>{editingId ? 'Atualizar' : 'Cadastrar'}</button>
+                </div>
+
+                <div>
+
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export default Admin
