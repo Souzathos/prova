@@ -32,7 +32,7 @@ export class GuestService {
 
         const guests = await this.repo.find({
             where,
-            relations: {table_number: true}
+            relations: {table_number: {guests: true}}
         })
 
         const tables = await this.tableRepo.find({ relations: { guests: true } })

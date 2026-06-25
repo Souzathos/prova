@@ -12,6 +12,7 @@ function Reception() {
     const [search, setSearch] = useState('')
     const [table, setTable] = useState('')
     const [ordem, setOrdem] = useState('nome')
+    const [sucessId, setSucessId] = useState('')
 
     const ref = useRef()
     const handlePrint = useReactToPrint({
@@ -49,6 +50,12 @@ function Reception() {
         const t = setTimeout(() => setFeedback(null), 3000)
         return () => clearTimeout(t)
     }, [feedback])
+
+    useEffect(() => {
+        if (!sucessId) return
+        const t = setTimeout(() => setSucessId(null), 3000)
+        return () => clearTimeout(t)
+    }, [sucessId])
 
     const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
         .filter((g) => table ? g.table_number?.table_number === Number(table) : true)

@@ -13,7 +13,7 @@ function Hero({ guests, page, funcao }) {
   const confirmed = guests.filter((g) => g.checked_in).length
   const pending = total - confirmed
   return (
-    <div className='h-80 bg-[var(--dark-brown)] p-6 rounded-2xl mt-10 mb-10'>
+    <div className='min-h-80 bg-[var(--dark-brown)] p-6 rounded-2xl mt-10 mb-10'>
       <div className='flex justify-between items-center '>
         <div className='space-y-2 mb-5'>
           <h3 className='text-[var(--warm-gold)] text-md tracking-widest font-serif'>Gerenciamento de convidados</h3>
