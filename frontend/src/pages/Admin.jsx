@@ -1,13 +1,13 @@
-import { listGuests, registerGuest, updateGuest, deleteGuest, undoCheckinGuest } from '../services/guestService'
 import React, { use, useEffect, useRef, useState } from 'react'
 import { useReactToPrint } from 'react-to-print'
 import Hero from '../components/Hero'
 import Header from '../components/Header'
 import GuestCard from '../components/GuestCard'
+import { listGuests, registerGuest, updateGuest, deleteGuest, undoCheckinGuest } from '../services/guestService'
 
 function Admin() {
     const [guests, setGuests] = useState([])
-    const [feedback, setFeedback] = useState(null)
+    const [error, setError] = useState(null)
     const [editingId, setEditingId] = useState(null)
     const [loading, setLoading] = useState(null)
     const [form, setForm] = useState({
@@ -23,45 +23,34 @@ function Admin() {
         contentRef: ref
     })
 
-    useEffect(() => {
-        load()
-    }, [])
-
-    useEffect(() => {
-        if (!feedback) return
-        const t = setTimeout(() => setFeedback(null), 3000)
-        return () => clearTimeout(t)
-    }, [feedback])
-
     async function load() {
         try {
             setLoading(true)
             const data = await listGuests()
             setGuests(data)
-        } catch (e) {
-            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
         } finally {
             setLoading(false)
         }
     }
 
-    async function save() {
+    async function save(id) {
         try {
-            const payload = { ...form, table_number: Number(form.table_number) }
-
             if (editingId) {
                 if (!confirm('Deseja Atualizar o convidado?')) return
-                const data = await updateGuest(editingId, payload)
-                setFeedback({ type: 'success', message: data.message || 'Convidado atualizado!' })
+                await updateGuest(editingId, form)
+                load()
+                setSucess('Convidado atualizado com sucesso!')
                 setEditingId(null)
+                resetForm()
             } else {
-                const data = await registerGuest(payload)
-                setFeedback({ type: 'success', message: data.message || 'Convidado cadastrado!' })
+                if (!form.name || !form.email || !form.phone || !form.table_number) throw new Error('Formulário incompleto.')
+                await registerGuest(form)
+                setSucess('Convidado registrado com sucesso!')
+                load()
+                resetForm()
             }
-            load()
-            resetForm()
         } catch (e) {
-            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
+            setError(e.message)
         }
     }
 
@@ -88,22 +77,22 @@ function Admin() {
     async function remove(id) {
         try {
             if (!confirm('Deseja excluir o convidado?')) return
-            const data = await deleteGuest(id)
-            setFeedback({ type: 'success', message: data.message || 'Convidado excluído!' })
+            await deleteGuest(id)
+            setSucess('Convidado deletado com sucesso!')
             load()
         } catch (e) {
-            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
+            setError(e.message)
         }
     }
 
     async function undoCheckin(id) {
         try {
             if (!confirm('Deseja desfazer o check-in?')) return
-            const data = await undoCheckinGuest(id)
-            setFeedback({ type: 'success', message: data.message || 'Check-in desfeito!' })
+            await undoCheckinGuest(id)
+            setSucess('Check-in desfeito com sucesso!')
             load()
         } catch (e) {
-            setFeedback({ type: 'error', message: e.message === 'Failed to fetch' ? 'Servidor indisponível. Tente novamente mais tarde.' : e.message })
+            setError(e.message)
         }
     }
 
@@ -128,16 +117,8 @@ function Admin() {
             <Header page="admin" />
             <Hero page="admin" guests={guests} funcao={handlePrint} />
 
-            {feedback && (
-                <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-semibold max-w-[90vw] text-center ${
-                    feedback.type === 'success' ? 'bg-[var(--success)]' : 'bg-[var(--danger)]'
-                }`}>
-                    {feedback.message}
-                </div>
-            )}
-
-            <div className='w-full p-2 flex flex-col md:flex-row'>
-                <div className='bg-[var(--ivory)] p-4 shadow rounded-2xl w-full md:w-1/2'>
+            <div className='w-full p-2 flex flex-col md:flex-row gap-3 items-center md:items-start'>
+                <div className='bg-[var(--ivory)] p-2 shadow rounded-2xl w-full md:w-1/2'>
                     <p>Novo usuário</p>
                     <h2>Cadastro</h2>
 
@@ -145,26 +126,16 @@ function Admin() {
                     {sucess && (<p className='text-[var(--light-green)] text-xs text-center'>{sucess}</p>)}
 
                     <input type="text" placeholder='Nome Completo' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
                     <input type="text" placeholder='E-mail' value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
-                    <input type="text" placeholder='Telefone' value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
+                    <input type="text" placeholder='Telefome' value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
                     <input type="text" placeholder='Número da mesa' value={form.table_number} onChange={(e) => setForm({ ...form, table_number: Number(e.target.value) })}
-                        className='w-full p-2 border-b border-b-[var(--warm-gold)] mt-5' />
+                        className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
 
-                    <div className='flex gap-2 mt-5'>
-                        <button onClick={() => save()} className={`w-full py-3 rounded-xl text-lg font-bold cursor-pointer ${editingId ? 'bg-[var(--warning)] text-white' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)]"}`}>
-                            {editingId ? 'Atualizar' : 'Cadastrar'}
-                        </button>
-                        {editingId && (
-                            <button onClick={resetForm} className='py-3 px-6 rounded-xl text-lg cursor-pointer bg-gray-300 text-gray-700'>
-                                Cancelar
-                            </button>
-                        )}
-                    </div>
-                </div>
-
+                    <div className='flex space-x-2'>
+                    <button onClick={() => save()} className={`${editingId ? 'bg-[var(--warning)] w-1/2' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)] w-full"} mt-5 rounded-full p-2 text-lg cursor-pointer`}>{editingId ? 'Atualizar' : 'Cadastrar'}</button>
 
                     {editingId && (
                         <button onClick={() => resetForm()} className='bg-transparent border border-[var(--warm-gold)] p-2 rounded-full shadow w-1/2 mt-5'>Cancelar</button>
@@ -176,10 +147,10 @@ function Admin() {
                     {guests.map((g) => (
                         <GuestCard key={g.id}
                         guests={g}>
-                            <button onClick={() => edit(g)}>Editar</button>
-                            <button onClick={() => remove(g.id)}>Excluir</button>
+                            <button onClick={() => edit(g)} className='bg-[var(--warm-gold)] text-white font-semibold px-4 py-2 rounded-full cursor-pointer whitespace-nowrap'>Editar</button>
+                            <button onClick={() => remove(g.id)} className='bg-[var(--danger)] text-white font-semibold px-4 py-2 rounded-full cursor-pointer whitespace-nowrap'>Excluir</button>
                             {g.checked_in && (
-                                <button onClick={() => undoCheckin(g.id)}>Desfazer Check-in</button>
+                                <button onClick={() => undoCheckin(g.id)} className='bg-[var(--warning)] text-white font-semibold px-4 py-2 rounded-full cursor-pointer whitespace-nowrap'>Desfazer Check-in</button>
                             )}
                         </GuestCard>
                     ))}

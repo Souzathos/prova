@@ -2,9 +2,6 @@ import React from 'react'
 import { Mail, MapPin, Phone } from 'lucide-react'
 
 function GuestCard({ guests, children }) {
-    const count = guests.table_number?.guest_count ?? 0
-    const max = guests.table_number?.max_length ?? 0
-    const isFull = max > 0 && count >= max
 
     return (
         <div className='bg-[var(--ivory)] border border-[var(--cream)] rounded-2xl p-4'>
@@ -13,13 +10,13 @@ function GuestCard({ guests, children }) {
                     <div className='flex flex-col'>
                         <div className='flex items-center space-x-4 gap-3'>
 
-                        <div className='rounded-full min-w-14 w-14 h-14 bg-[var(--cream)]'>
-                        </div>
+                            <div className='rounded-full min-w-14 w-14 h-14 bg-[var(--cream)]'>
+                            </div>
 
-                        <div className='space-x-4'>
-                            <p>{guests.name}</p>
+                            <div className='space-x-4'>
+                                <p>{guests.name}</p>
+                            </div>
                         </div>
-                                                </div>
 
                         <div className='flex space-x-4 items-center'>
                             <Mail size={14} />
@@ -28,7 +25,7 @@ function GuestCard({ guests, children }) {
 
                         <div className='flex space-x-4 items-center mb-5'>
                             <MapPin size={14} />
-                            <p className={`${guests.table_number?.guests.length >= guests.table_number?.max_length ? "text-[var(--danger)]" : "text-[var(--warm-gold)]"}`}>{guests.table_number?.table_number} - {guests.table_number?.guests.length}/{guests.table_number?.max_length}</p>
+                            <p className={`${guests.table_number?.guests?.length >= guests.table_number?.max_length ? "text-[var(--danger)]" : "text-[var(--warm-gold)]"}`}>{guests.table_number?.table_number} - {guests.table_number?.guests?.length ?? 0}/{guests.table_number?.max_length}</p>
 
                             <Phone size={14} />
                             |
@@ -39,21 +36,14 @@ function GuestCard({ guests, children }) {
                         </div>
                         {guests.checked_in ? (
                             <span className='bg-[var(--light-green)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Check-in Realizado - {guests.checked_at}</span>
-                        ): <span className='bg-[var(--warning)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Pendente </span>}
+                        ) : <span className='bg-[var(--warning)] text-white font-bold text-center rounded-full text-xs p-1 mb-5'>Pendente </span>}
                     </div>
                 </div>
 
-                {guests.checked_in ? (
-                    <span className='bg-[var(--light-green)] text-white font-bold text-center rounded-full text-sm p-2'>
-                        Check-in realizado - {new Date(guests.checked_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                ) : (
-                    <span className='bg-[var(--warning)] text-white font-bold text-center rounded-full text-sm p-2'>
-                        Pendente
-                    </span>
-                )}
+                <div className='flex gap-2 items-center'>
 
-                {children}
+                    {children}
+                </div>
             </div>
         </div>
     )

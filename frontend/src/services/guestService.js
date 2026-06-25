@@ -3,18 +3,17 @@ import { api } from './api'
 export async function listGuests() {
     return api('/guest/list')
 }
-
-export async function registerGuest(form) {
+export async function registerGuest(data) {
     return api('/guest/register', {
         method: 'POST',
-        body: JSON.stringify(form)
+        body: JSON.stringify(data)
     })
 }
 
-export async function updateGuest(id, form) {
+export async function updateGuest(id, data) {
     return api(`/guest/update/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(form)
+        body: JSON.stringify(data)
     })
 }
 

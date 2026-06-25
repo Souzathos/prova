@@ -30,26 +30,10 @@ export class GuestService {
         if(name) where.name = Like(`%${name}%`)
         if(table_number) where.table_number = {table_number: table_number}
 
-        const guests = await this.repo.find({
+        return this.repo.find({
             where,
             relations: {table_number: {guests: true}}
         })
-
-        const tables = await this.tableRepo.find({ relations: { guests: true } })
-        const countByTableId: Record<number, number> = {}
-        for (const t of tables) {
-            countByTableId[t.id] = t.guests?.length || 0
-        }
-
-        return guests.map(g => ({
-            ...g,
-            table_number: g.table_number ? {
-                id: g.table_number.id,
-                table_number: g.table_number.table_number,
-                max_length: g.table_number.max_length,
-                guest_count: countByTableId[g.table_number.id] || 0
-            } : null
-        }))
     }
 
     async update(guestId:number, data: any) {
