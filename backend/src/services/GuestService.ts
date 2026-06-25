@@ -32,7 +32,7 @@ export class GuestService {
 
         return this.repo.find({
             where,
-            relations: {table_number: true}
+            relations: {table_number: {guests: true}}
         })
     }
 

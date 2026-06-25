@@ -11,6 +11,7 @@ function Reception() {
     const [search, setSearch] = useState('')
     const [table, setTable] = useState('')
     const [ordem, setOrdem] = useState('nome')
+    const [sucessId, setSucessId] = useState('')
 
     const ref = useRef()
     const handlePrint = useReactToPrint({
@@ -33,7 +34,7 @@ function Reception() {
         }
     }
 
-    async function checkin(id){
+    async function checkin(id) {
         try {
             const res = await fetch(`http://localhost:3000/guest/checkin/${id}`, {
                 method: 'POST',
@@ -42,8 +43,9 @@ function Reception() {
                     'Content-Type': 'application/json'
                 }
             })
+            setSucessId(id)
             load()
-        } catch(e) {
+        } catch (e) {
             setError(e)
             console.log('Erro ao fazer checkin')
         }
@@ -54,47 +56,58 @@ function Reception() {
     }, [])
 
     useEffect(() => {
-        if(!error) return
+        if (!error) return
         const t = setTimeout(() => setError(null), 3000)
         return () => clearTimeout(t)
     }, [error])
 
+    useEffect(() => {
+        if (!sucessId) return
+        const t = setTimeout(() => setSucessId(null), 3000)
+        return () => clearTimeout(t)
+    }, [sucessId])
+
     const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((g) => table ? g.table_number?.table_number === Number(table) : true)
-    .sort((a,b) => {
-        if(ordem === "mesa") return a.table_number?.table_number - b.table_number?.table_number
-        if(ordem === "status") return a.checked_in - b.checked_in
-        return a.name.localeCompare(b.name)
-    })
-  return (
-    
-    <div className='min-h-screen p-4 bg-[var(--cream)]'>
-        <Header page="Recepção"/>
-        <Hero page="Recepção" guests={guests} funcao={handlePrint} />
-        
-        <div className='flex flex-col gap-2 mt-30 md:mt-0'>
-        <input type="text" placeholder='Buscar convidados...' value={search} onChange={(e) => setSearch(e.target.value)}
-        className='w-full p-4 shadow rounded-2xl bg-[var(--ivory)]'/>
-        <div className='flex gap-4'>
-        <input type="text" placeholder='Buscar mesa...'  className='w-full p-4 shadow rounded-2xl bg-[var(--ivory)]' value={table} onChange={(e) => setTable(e.target.value)}/>
-        <select value={ordem} onChange={(e) => setOrdem(e.target.value)}  className='rounded-2xl bg-[var(--ivory)] p-4'>
-            <option value="mesa">Mesa</option>
-            <option value="name">Nome</option>
-            <option value="status">Status</option>
-        </select>
-        </div>
+        .filter((g) => table ? g.table_number?.table_number === Number(table) : true)
+        .sort((a, b) => {
+            if (ordem === "mesa") return a.table_number?.table_number - b.table_number?.table_number
+            if (ordem === "status") return a.checked_in - b.checked_in
+            return a.name.localeCompare(b.name)
+        })
+    return (
 
-        </div>
+        <div className='min-h-screen p-4 bg-[var(--cream)]'>
+            <Header page="Recepção" />
+            <Hero page="Recepção" guests={guests} funcao={handlePrint} />
 
-        
-        <div ref={ref} className='gap-2 flex flex-col mt-10'>
-            {filtered.map((g) => (
-                <GuestCard key={g.id}
-                guests={g}
-                ><button onClick={() => checkin(g.id)} className={`${g.checked_in ? "bg-[var(--success)] text-white font-semibold" : "bg-[var(--warning)] text-white font-semibold)"} px-4 py-2 rounded-full`}>{g.checked_in ? "Check-in realizado" : "Realizar check-in"}</button></GuestCard>
-            ))}
-        </div>        </div>
-  )
+            <div className='flex flex-col gap-2'>
+                <input type="text" placeholder='Buscar convidados...' value={search} onChange={(e) => setSearch(e.target.value)}
+                    className='w-full p-4 shadow rounded-2xl bg-[var(--ivory)]' />
+                <div className='flex gap-4'>
+                    <input type="text" placeholder='Buscar mesa...' className='w-full p-4 shadow rounded-2xl bg-[var(--ivory)]' value={table} onChange={(e) => setTable(e.target.value)} />
+                    <select value={ordem} onChange={(e) => setOrdem(e.target.value)} className='rounded-2xl bg-[var(--ivory)] p-4'>
+                        <option value="mesa">Mesa</option>
+                        <option value="name">Nome</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+
+            </div>
+
+
+            <div ref={ref} className='gap-2 flex flex-col mt-10'>
+
+                {filtered.map((g) => (
+                    <GuestCard key={g.id}
+                        guests={g}
+                    >
+                        {sucessId === g.id && (<p className='text-[var(--success)] text-xs text-center'>Checkin realizado com sucesso!</p>)}
+                        <button onClick={() => checkin(g.id)} className={`${g.checked_in ? "bg-[var(--success)] text-white font-semibold" : "bg-[var(--warning)] text-white font-semibold)"} px-4 py-2 rounded-full`}>{g.checked_in ? "Check-in realizado" : "Realizar check-in"}</button>
+
+                    </GuestCard>
+                ))}
+            </div>        </div>
+    )
 }
 
 export default Reception

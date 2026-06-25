@@ -25,7 +25,7 @@ function GuestCard({ guests, children }) {
 
                         <div className='flex space-x-4 items-center mb-5'>
                             <MapPin size={14} />
-                            <p>{guests.table_number?.table_number} - {guests.table_number?.guests}/{guests.table_number?.max_length}</p>
+                            <p>{guests.table_number?.table_number} - {guests.table_number?.guests.length}/{guests.table_number?.max_length}</p>
 
                             <Phone size={14} />
                             <p>{guests.phone}</p>
