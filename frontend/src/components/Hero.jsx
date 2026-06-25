@@ -1,13 +1,7 @@
 import React, { useRef } from 'react'
-import { useReactToPrint } from 'react-to-print'
 import MiniCard from './MiniCard'
 
 function Hero({ guests, page, funcao }) {
-
-  const ref = useRef()
-  const handlePrint = useReactToPrint({
-    contentRef: ref
-  })
 
   const total = guests.length
   const confirmed = guests.filter((g) => g.checked_in).length
@@ -21,7 +15,7 @@ function Hero({ guests, page, funcao }) {
           <p className='text-[var(--ivory)] tracking-wider'>Acompanhe check-ins, visualize convidados e administre seu sistema em tempo real</p>
         </div>
         <div>
-          <button onClick={handlePrint} className='mt-5 rounded-full bg-transparent border border-[var(--warm-gold)] cursor-pointer text-white p-4'>Exportar Relatório</button>
+          <button onClick={funcao} className='mt-5 rounded-full bg-transparent border border-[var(--warm-gold)] cursor-pointer text-white p-4'>Exportar Relatório</button>
         </div>
       </div>
 

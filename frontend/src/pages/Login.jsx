@@ -10,9 +10,9 @@ function Login() {
         try {
             const data = await login(email, password)
             localStorage.setItem('role', data.safe.role)
-            localStorage.setItem('token', data.token) 
-
-            if(data.safe.role === "admin") {
+            localStorage.setItem('token', data.token)
+            
+            if(data.safe.role === `admin`) {
                 window.location.href = "/admin"
             } else {
                 window.location.href = "/reception"
@@ -20,6 +20,7 @@ function Login() {
         } catch(e) {
             setError(e.message || 'Erro ao fazer login')
         }
+
     }
 
     useEffect(() => {

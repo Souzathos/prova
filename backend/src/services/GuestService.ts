@@ -37,15 +37,16 @@ export class GuestService {
     }
 
     async update(guestId:number, data: any) {
-        const exists = await this.repo.findOneBy({id: guestId})
+        const exists = await this.repo.findOne({where: {id: guestId}, relations: {table_number: true}})
         if(!exists) throw new Error('Convidado não encontrado')
         if(data.table_number) {
+            const currentTable = exists.table_number?.table_number
             const tableConfig = await this.tableRepo.findOne({
                 where: {table_number: data.table_number},
                 relations: {guests: true}
             })
             if(!tableConfig) throw new Error('Mesa não encontrada')
-            if(tableConfig.guests.length >= tableConfig.max_length) {
+            if(data.table_number !== currentTable && tableConfig.guests.length >= tableConfig.max_length) {
                 throw new Error(`Mesa ${tableConfig.table_number} está lotada. Capacidade máxima: ${tableConfig.max_length}`)
             }
             data.table_number = tableConfig

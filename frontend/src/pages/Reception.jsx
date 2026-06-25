@@ -57,15 +57,15 @@ function Reception() {
     }, [sucessId])
 
     const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
-        .filter((g) => table ? g.table_number?.table_number === Number(table) : true)
-        .sort((a, b) => {
-            if (ordem === "mesa") return a.table_number?.table_number - b.table_number?.table_number
-            if (ordem === "status") return a.checked_in - b.checked_in
-            return a.name.localeCompare(b.name)
-        })
+    .filter((g) =>table ?  g.table_number?.table_number  === Number(table) : true)
+    .sort((a,b) => {
+        if(ordem === "mesa") return a.table_number?.table_number - b.table_number?.table_number
+        if(ordem === "status") return a.checked_in - b.checked_in
+        return a.name.localeCompare(b.name)
+    })    
     return (
 
-        <div className='min-h-screen p-4 bg-[var(--cream)]'>
+        <div className='min-h-screen p-4 bg-[var(--cream)]' ref={ref}>
             <Header page="Recepção" />
             <Hero page="Recepção" guests={guests} funcao={handlePrint} />
 
@@ -84,7 +84,7 @@ function Reception() {
             </div>
 
 
-            <div ref={ref} className='gap-2 flex flex-col mt-10'>
+            <div className='gap-2 flex flex-col mt-10'>
 
                 {filtered.map((g) => (
                     <GuestCard key={g.id}

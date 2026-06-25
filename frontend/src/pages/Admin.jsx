@@ -35,21 +35,21 @@ function Admin() {
 
     async function save(id) {
         try {
-            if (editingId) {
-                if (!confirm('Deseja Atualizar o convidado?')) return
+            if(editingId) {
+                if(!form.name || !form.email || !form.phone || !form.table_number) throw new Error('Formulário incompleto.')
+                if(!confirm('Deseja atualizar o convidado?')) return
                 await updateGuest(editingId, form)
-                load()
-                setSucess('Convidado atualizado com sucesso!')
                 setEditingId(null)
+                setSucess('Convidado atualizado com sucesso.')
                 resetForm()
+                load()
             } else {
-                if (!form.name || !form.email || !form.phone || !form.table_number) throw new Error('Formulário incompleto.')
-                await registerGuest(form)
-                setSucess('Convidado registrado com sucesso!')
+                await registerGuest(form) 
+                setSucess('Convidado registrado com sucesso')
                 load()
                 resetForm()
             }
-        } catch (e) {
+        } catch(e) {
             setError(e.message)
         }
     }
@@ -87,11 +87,11 @@ function Admin() {
 
     async function undoCheckin(id) {
         try {
-            if (!confirm('Deseja desfazer o check-in?')) return
+            if(!confirm('Deseja desfazer o check-in?')) return
             await undoCheckinGuest(id)
             setSucess('Check-in desfeito com sucesso!')
             load()
-        } catch (e) {
+        } catch(e) {
             setError(e.message)
         }
     }
@@ -101,29 +101,29 @@ function Admin() {
     }, [])
 
     useEffect(() => {
-        if(!error) return
+        if (!error) return
         const t = setTimeout(() => setError(null), 3000)
         return () => clearTimeout(t)
     }, [error])
 
     useEffect(() => {
-        if(!sucess) return
+        if (!sucess) return
         const t = setTimeout(() => setSucess(null), 3000)
         return () => clearTimeout(t)
     }, [sucess])
 
     return (
-        <div className='min-h-screen bg-[var(--cream)] p-4'>
+        <div className='min-h-screen bg-[var(--cream)] p-4' ref={ref}>
             <Header page="admin" />
             <Hero page="admin" guests={guests} funcao={handlePrint} />
-
+            {error && (<p className='text-[var(--danger)] text-xl font-bold text-center'>{error}</p>)}
+            {sucess && (<p className='text-[var(--light-green)] text-xl font-bold  text-center'>{sucess}</p>)}
             <div className='w-full p-2 flex flex-col md:flex-row gap-3 items-center md:items-start'>
                 <div className='bg-[var(--ivory)] p-2 shadow rounded-2xl w-full md:w-1/2'>
                     <p>Novo usuário</p>
                     <h2>Cadastro</h2>
 
-                    {error && (<p className='text-[var(--danger)] text-xs text-center'>{error}</p>)}
-                    {sucess && (<p className='text-[var(--light-green)] text-xs text-center'>{sucess}</p>)}
+
 
                     <input type="text" placeholder='Nome Completo' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
                         className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
@@ -135,18 +135,18 @@ function Admin() {
                         className='w-full p-2  border-b border-b-[var(--warm-gold)] mt-5' />
 
                     <div className='flex space-x-2'>
-                    <button onClick={() => save()} className={`${editingId ? 'bg-[var(--warning)] w-1/2' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)] w-full"} mt-5 rounded-full p-2 text-lg cursor-pointer`}>{editingId ? 'Atualizar' : 'Cadastrar'}</button>
+                        <button onClick={() => save()} className={`${editingId ? 'bg-[var(--warning)] w-1/2' : "bg-[var(--dark-brown)] border border-[var(--warm-gold)] text-[var(--ivory)] w-full"} mt-5 rounded-full p-2 text-lg cursor-pointer`}>{editingId ? 'Atualizar' : 'Cadastrar'}</button>
 
-                    {editingId && (
-                        <button onClick={() => resetForm()} className='bg-transparent border border-[var(--warm-gold)] p-2 rounded-full shadow w-1/2 mt-5'>Cancelar</button>
-                    )}
+                        {editingId && (
+                            <button onClick={() => resetForm()} className='bg-transparent border border-[var(--warm-gold)] p-2 rounded-full shadow w-1/2 mt-5'>Cancelar</button>
+                        )}
                     </div>
                 </div>
 
-                <div className='flex flex-col w-full md:w-1/2 gap-3'  ref={ref}>
+                <div className='flex flex-col w-full md:w-1/2 gap-3'>
                     {guests.map((g) => (
                         <GuestCard key={g.id}
-                        guests={g}>
+                            guests={g}>
                             <button onClick={() => edit(g)} className='bg-[var(--warm-gold)] text-white font-semibold px-4 py-2 rounded-full cursor-pointer whitespace-nowrap'>Editar</button>
                             <button onClick={() => remove(g.id)} className='bg-[var(--danger)] text-white font-semibold px-4 py-2 rounded-full cursor-pointer whitespace-nowrap'>Excluir</button>
                             {g.checked_in && (

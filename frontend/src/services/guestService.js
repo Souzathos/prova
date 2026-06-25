@@ -1,19 +1,20 @@
-import { api } from './api'
+import { api } from "./api";
 
 export async function listGuests() {
     return api('/guest/list')
 }
-export async function registerGuest(data) {
-    return api('/guest/register', {
+
+export async function registerGuest(form) {
+    return api(`/guest/register`, {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify(form)
     })
 }
 
-export async function updateGuest(id, data) {
-    return api(`/guest/update/${id}`, {
+export async function updateGuest(guestId, form) {
+    return api(`/guest/update/${guestId}`, {
         method: 'PUT',
-        body: JSON.stringify(data)
+        body: JSON.stringify(form)
     })
 }
 
@@ -29,8 +30,10 @@ export async function checkinGuest(id) {
     })
 }
 
+
 export async function undoCheckinGuest(id) {
     return api(`/guest/remove-checkin/${id}`, {
         method: 'POST'
     })
 }
+
