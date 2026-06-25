@@ -25,9 +25,13 @@ function GuestCard({ guests, children }) {
 
                         <div className='flex space-x-4 items-center mb-5'>
                             <MapPin size={14} />
-                            <p>{guests.table_number?.table_number} - {guests.table_number?.guests.length}/{guests.table_number?.max_length}</p>
+                            <p className={`${guests.table_number?.guests.length >= guests.table_number?.max_length ? "text-[var(--danger)]" : "text-[var(--warm-gold)]"}`}>{guests.table_number?.table_number} - {guests.table_number?.guests.length}/{guests.table_number?.max_length}</p>
 
                             <Phone size={14} />
+                            |
+
+
+
                             <p>{guests.phone}</p>
                         </div>
                         {guests.checked_in ? (
